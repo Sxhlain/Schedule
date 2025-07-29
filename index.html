@@ -75,7 +75,11 @@
         <header class="p-4 bg-blue-600 dark:bg-blue-700 text-white shadow-md">
             <h1 class="text-2xl font-bold text-center">Jadwal Pelajaran</h1>
             <p class="text-center text-blue-200">Kelas 12-1 (A1)</p>
-            <!-- Login/Register/Logout buttons removed -->
+            <div class="flex justify-center items-center mt-2">
+                <button id="auth-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded-lg text-sm mr-2 transition-transform transform hover:scale-105">Login / Register</button>
+                <p id="user-id-display" class="text-center text-blue-200 text-sm flex-grow truncate"></p>
+                <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg text-sm hidden transition-transform transform hover:scale-105">Logout</button>
+            </div>
         </header>
 
         <!-- Schedule Section -->
@@ -98,18 +102,18 @@
         <div class="flex-grow flex flex-col p-4 border-t border-gray-200 dark:border-gray-700 overflow-hidden">
             <div class="flex justify-between items-center mb-3">
                 <h3 class="text-lg font-semibold">Daftar PR</h3>
-                <button id="add-pr-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">
+                <button id="add-pr-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105 hidden">
                     Tambah PR
                 </button>
             </div>
             <div id="pr-list" class="flex-grow overflow-y-auto space-y-3 pr-2 custom-scrollbar">
                 <!-- PR items will be injected here by JS -->
-                 <p id="no-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8 hidden">Belum ada PR. Selamat! 🎉</p>
+                 <p id="no-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8">Belum ada PR. Selamat! 🎉</p>
                  <div id="loading-pr" class="flex justify-center items-center py-4 hidden">
                     <div class="spinner"></div>
                     <span class="ml-2 text-gray-500 dark:text-gray-400">Memuat PR...</span>
                 </div>
-                <!-- Login prompt message removed -->
+                <p id="login-prompt-message" class="text-gray-500 dark:text-gray-400 text-center mt-8 hidden">Login untuk melihat dan menambahkan PR Anda.</p>
             </div>
         </div>
     </div>
@@ -135,37 +139,54 @@
         </div>
     </div>
 
-    <!-- Auth Modal removed -->
-
-    <!-- Image overlay for full view -->
-    <div id="image-overlay" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50">
-        <img id="overlay-image" src="" alt="Full PR Photo" class="max-w-full max-h-full rounded-lg shadow-lg">
-    </div>
-
-    <!-- New Modal for LLM Response -->
-    <div id="llm-response-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-40">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Bantuan PR ✨</h2>
-                <button id="close-llm-modal-btn" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+    <!-- Modal for Auth (Login/Register) -->
+    <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-40">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+            <h2 id="auth-modal-title" class="text-xl font-bold mb-4 text-center">Login</h2>
+            <form id="auth-form">
+                <div class="mb-4">
+                    <label for="auth-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                    <input type="email" id="auth-email" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700" required>
+                </div>
+                <div class="mb-4">
+                    <label for="auth-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                    <input type="password" id="auth-password" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700" required>
+                </div>
+                <p id="auth-error-message" class="text-red-500 text-sm mb-4 hidden"></p>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-auth-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Batal</button>
+                    <button type="submit" id="auth-submit-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Login</button>
+                </div>
+            </form>
+            <button id="toggle-auth-mode" class="w-full mt-4 text-sm text-blue-500 hover:underline">Belum punya akun? Register di sini.</button>
+            <div class="mt-4 text-center">
+                <div class="relative flex items-center justify-center">
+                    <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                    <span class="flex-shrink mx-4 text-gray-500 dark:text-gray-400">ATAU</span>
+                    <div class="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+                </div>
+                <button id="google-login-btn" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center transition-transform transform hover:scale-105">
+                    <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.0003 4.75C14.0263 4.75 15.8453 5.483 17.2023 6.757L20.0483 3.911C18.0673 2.097 15.2303 1 12.0003 1C7.79533 1 4.10933 3.447 2.36833 7.049L5.62633 9.516C6.44633 7.054 8.94833 4.75 12.0003 4.75Z" fill="#EA4335"/>
+                        <path d="M23.0003 12.0003C23.0003 11.3463 22.9463 10.6933 22.8443 10.0533H12.0003V14.3913H18.3983C18.1183 15.6173 17.3473 16.6693 16.2043 17.3883L19.4623 19.8553C21.3193 18.1073 23.0003 15.0643 23.0003 12.0003Z" fill="#4285F4"/>
+                        <path d="M5.62598 14.484C5.24498 13.339 5.03198 12.17 5.03198 11.0003C5.03198 9.83033 5.24498 8.66133 5.62598 7.51633L2.36898 5.04933C1.04198 7.73433 1.04198 10.2663 2.36898 12.9513L5.62598 14.484Z" fill="#FBBC05"/>
+                        <path d="M12.0003 20.25C15.2303 20.25 18.0673 19.143 20.0483 17.329L17.2023 14.483C15.8453 15.757 14.0263 16.49 12.0003 16.49C8.94833 16.49 6.44633 14.186 5.62633 11.724L2.36833 14.191C4.10933 17.793 7.79533 20.25 12.0003 20.25Z" fill="#34A853"/>
+                    </svg>
+                    Login dengan Google
                 </button>
             </div>
-            <div id="llm-response-content" class="text-gray-700 dark:text-gray-300 max-h-80 overflow-y-auto custom-scrollbar">
-                <div id="llm-loading-spinner" class="flex justify-center items-center py-4 hidden">
-                    <div class="spinner"></div>
-                    <span class="ml-2 text-gray-500 dark:text-gray-400">Memuat penjelasan...</span>
-                </div>
-                <p id="llm-response-text"></p>
-            </div>
         </div>
+    </div>
+
+    <!-- Image overlay for full view -->
+    <div id="image-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <img id="overlay-image" src="" alt="Full PR Photo" class="max-w-full max-h-full rounded-lg shadow-lg">
     </div>
 
     <script type="module">
         // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        // Removed specific auth imports like createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Initialize Firebase
@@ -197,7 +218,7 @@
         const app = initializeApp(effectiveFirebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        // GoogleAuthProvider removed
+        const googleProvider = new GoogleAuthProvider(); // Initialize Google Auth Provider
 
         let userId = null; // Will store the authenticated user ID
         let homeworks = []; // Local array to hold homework data
@@ -267,7 +288,7 @@
             const prList = document.getElementById('pr-list');
             const noPrMessage = document.getElementById('no-pr-message');
             const loadingPrMessage = document.getElementById('loading-pr');
-            // Removed loginPromptMessage
+            const loginPromptMessage = document.getElementById('login-prompt-message');
             const addPrBtn = document.getElementById('add-pr-btn');
             const prModal = document.getElementById('pr-modal');
             const prForm = document.getElementById('pr-form');
@@ -275,18 +296,25 @@
             const savePrBtn = document.getElementById('save-pr-btn');
             const prDescInput = document.getElementById('pr-desc');
             const prPhotoInput = document.getElementById('pr-photo');
-            // Removed userIdDisplay
+            const userIdDisplay = document.getElementById('user-id-display');
             const imageOverlay = document.getElementById('image-overlay');
             const overlayImage = document.getElementById('overlay-image');
 
-            // Auth elements removed
-            // LLM elements
-            const llmResponseModal = document.getElementById('llm-response-modal');
-            const closeLlmModalBtn = document.getElementById('close-llm-modal-btn');
-            const llmResponseContent = document.getElementById('llm-response-content');
-            const llmLoadingSpinner = document.getElementById('llm-loading-spinner');
-            const llmResponseText = document.getElementById('llm-response-text');
+            // Auth elements
+            const authBtn = document.getElementById('auth-btn');
+            const logoutBtn = document.getElementById('logout-btn');
+            const authModal = document.getElementById('auth-modal');
+            const authModalTitle = document.getElementById('auth-modal-title');
+            const authForm = document.getElementById('auth-form');
+            const authEmailInput = document.getElementById('auth-email');
+            const authPasswordInput = document.getElementById('auth-password');
+            const authSubmitBtn = document.getElementById('auth-submit-btn');
+            const cancelAuthBtn = document.getElementById('cancel-auth-btn');
+            const toggleAuthModeBtn = document.getElementById('toggle-auth-mode');
+            const authErrorMessage = document.getElementById('auth-error-message');
+            const googleLoginBtn = document.getElementById('google-login-btn'); // New Google login button
 
+            let isLoginMode = true; // true for login, false for register
 
             // Function to show full image in a new overlay
             window.showImage = (src) => {
@@ -298,17 +326,35 @@
                 imageOverlay.classList.add('hidden');
             });
 
-            // Firebase Authentication (Anonymous) and Data Loading
-            // Sign in anonymously immediately to get a user ID for Firestore
-            try {
-                const userCredential = await signInAnonymously(auth);
-                userId = userCredential.user.uid;
-                console.log("Signed in anonymously. User ID:", userId);
-                listenForHomeworks(); // Start listening for homeworks after anonymous login
-            } catch (error) {
-                console.error("Error signing in anonymously:", error);
-                // Handle error (e.g., display a message to the user that data cannot be saved/loaded)
-            }
+            // Firebase Authentication and Data Loading
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    // Display user email if available, otherwise fallback to UID
+                    userIdDisplay.textContent = `User ID: ${user.email || user.uid}`;
+                    authBtn.classList.add('hidden');
+                    logoutBtn.classList.remove('hidden');
+                    addPrBtn.classList.remove('hidden');
+                    loginPromptMessage.classList.add('hidden');
+                    console.log("Firebase authenticated. User ID:", userId);
+                    // Start listening for homeworks once authenticated
+                    listenForHomeworks();
+                } else {
+                    userId = null;
+                    userIdDisplay.textContent = 'Belum login';
+                    authBtn.classList.remove('hidden');
+                    logoutBtn.classList.add('hidden');
+                    addPrBtn.classList.add('hidden');
+                    loginPromptMessage.classList.remove('hidden');
+                    prList.innerHTML = ''; // Clear PR list if not logged in
+                    noPrMessage.classList.remove('hidden'); // Show no PR message
+                    loadingPrMessage.classList.add('hidden'); // Hide loading spinner
+                    if (unsubscribeSnapshot) {
+                        unsubscribeSnapshot(); // Unsubscribe from previous listener
+                    }
+                    console.log("User logged out or not authenticated.");
+                }
+            });
 
             function listenForHomeworks() {
                 if (!userId) {
@@ -336,11 +382,6 @@
                     homeworks.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
                     renderPRs();
                     loadingPrMessage.classList.add('hidden'); // Hide loading spinner
-                    if (homeworks.length === 0) {
-                        noPrMessage.classList.remove('hidden');
-                    } else {
-                        noPrMessage.classList.add('hidden');
-                    }
                 }, (error) => {
                     console.error("Error fetching homeworks:", error);
                     loadingPrMessage.classList.add('hidden'); // Hide loading spinner on error
@@ -351,4 +392,368 @@
 
             function renderSchedules() {
                 scheduleContainer.innerHTML = '';
-                sche
+                scheduleData.forEach((day, index) => {
+                    const dayDiv = document.createElement('div');
+                    dayDiv.id = `day-${index}`;
+                    dayDiv.className = 'day-schedule w-full';
+                    if (index !== currentDayIndex) {
+                        dayDiv.classList.add('hidden');
+                    }
+
+                    const subjectsHtml = day.subjects.map(subject => `
+                        <div class="flex items-center p-3 rounded-lg mb-2 ${subject.color} ${subject.textColor} shadow-sm">
+                            <span class="font-medium w-28">${subject.time}</span>
+                            <span class="font-semibold">${subject.name}</span>
+                        </div>
+                    `).join('');
+
+                    dayDiv.innerHTML = `<div class="space-y-2">${subjectsHtml}</div>`;
+                    scheduleContainer.appendChild(dayDiv);
+                });
+            }
+
+            function updateDisplay(oldIndex, direction) {
+                dayTitle.textContent = scheduleData[currentDayIndex].day;
+                
+                const oldDayDiv = document.getElementById(`day-${oldIndex}`);
+                const newDayDiv = document.getElementById(`day-${currentDayIndex}`);
+
+                if (oldDayDiv && newDayDiv && oldIndex !== currentDayIndex) {
+                    scheduleContainer.style.height = `${Math.max(oldDayDiv.clientHeight, newDayDiv.clientHeight)}px`;
+                    
+                    oldDayDiv.classList.add('absolute');
+                    newDayDiv.classList.remove('hidden');
+                    
+                    if (direction === 'next') {
+                        newDayDiv.classList.add('slide-from-right');
+                        requestAnimationFrame(() => {
+                            oldDayDiv.classList.add('slide-to-left');
+                            newDayDiv.classList.remove('slide-from-right');
+                        });
+                    } else {
+                        newDayDiv.classList.add('slide-from-left');
+                        requestAnimationFrame(() => {
+                            oldDayDiv.classList.add('slide-to-right');
+                            newDayDiv.classList.remove('slide-from-left');
+                        });
+                    }
+
+                    newDayDiv.addEventListener('transitionend', () => {
+                        oldDayDiv.classList.add('hidden');
+                        oldDayDiv.classList.remove('absolute', 'slide-to-left', 'slide-to-right');
+                        scheduleContainer.style.height = '';
+                    }, { once: true });
+                } else if (newDayDiv) {
+                     newDayDiv.classList.remove('hidden');
+                }
+            }
+            
+            function showDay(index, direction) {
+                const oldIndex = currentDayIndex;
+                currentDayIndex = (index + scheduleData.length) % scheduleData.length;
+                updateDisplay(oldIndex, direction);
+            }
+
+            prevDayBtn.addEventListener('click', () => showDay(currentDayIndex - 1, 'prev'));
+            nextDayBtn.addEventListener('click', () => showDay(currentDayIndex + 1, 'next'));
+
+            // Swipe functionality
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            scheduleContainer.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            scheduleContainer.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+
+            function handleSwipe() {
+                if (touchEndX < touchStartX - 50) { // Swiped left
+                    showDay(currentDayIndex + 1, 'next');
+                }
+                if (touchEndX > touchStartX + 50) { // Swiped right
+                    showDay(currentDayIndex - 1, 'prev');
+                }
+            }
+
+            // PR functionality
+            function renderPRs() {
+                prList.innerHTML = ''; // Clear existing PRs
+                if (homeworks.length === 0) {
+                    prList.appendChild(noPrMessage);
+                    noPrMessage.classList.remove('hidden');
+                } else {
+                    noPrMessage.classList.add('hidden');
+                    homeworks.forEach(pr => {
+                        const prItem = document.createElement('div');
+                        prItem.className = 'p-3 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-start space-x-3';
+                        
+                        let imgHtml = '';
+                        if (pr.imageUrl) {
+                            // Use window.showImage for click handler
+                            imgHtml = `<img src="${pr.imageUrl}" alt="PR photo" class="w-16 h-16 rounded-md object-cover cursor-pointer" onclick="window.showImage('${pr.imageUrl}')">`;
+                        }
+
+                        prItem.innerHTML = `
+                            ${imgHtml}
+                            <div class="flex-grow">
+                                <p class="font-medium">${pr.description}</p>
+                            </div>
+                            <button data-id="${pr.id}" class="pr-done-btn flex-shrink-0 p-2 bg-green-500 text-white rounded-full hover:bg-green-600">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                            </button>
+                        `;
+                        prList.appendChild(prItem);
+                    });
+                }
+            }
+
+            addPrBtn.addEventListener('click', () => {
+                if (!userId) {
+                    // This should ideally not be reachable if button is hidden
+                    console.warn("User not logged in. Cannot add PR.");
+                    return;
+                }
+                prModal.classList.remove('hidden');
+                prForm.reset(); // Clear form on open
+            });
+
+            cancelPrBtn.addEventListener('click', () => {
+                prModal.classList.add('hidden');
+                prForm.reset();
+            });
+
+            prForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!userId) {
+                    console.error("User not logged in. Cannot save PR.");
+                    return;
+                }
+
+                savePrBtn.disabled = true; // Disable button to prevent double submission
+                savePrBtn.innerHTML = '<div class="spinner"></div>'; // Show spinner
+
+                const description = prDescInput.value;
+                const photoFile = prPhotoInput.files[0];
+                let imageUrl = null;
+
+                // Handle image file asynchronously
+                if (photoFile) {
+                    try {
+                        imageUrl = await new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.onload = (event) => resolve(event.target.result);
+                            reader.onerror = (error) => reject(error);
+                            reader.readAsDataURL(photoFile);
+                        });
+                    } catch (error) {
+                        console.error("Error reading image file:", error);
+                        // Optionally show an error message to the user
+                        savePrBtn.disabled = false;
+                        savePrBtn.innerHTML = 'Simpan';
+                        return; // Stop execution if image reading fails
+                    }
+                }
+
+                // Now that imageUrl is ready (or null if no photo), save to Firestore
+                try {
+                    await addDoc(collection(db, `artifacts/${currentAppId}/users/${userId}/homeworks`), {
+                        description: description,
+                        imageUrl: imageUrl,
+                        timestamp: Date.now() // Add a timestamp for sorting
+                    });
+                    console.log("PR added to Firestore successfully!");
+                } catch (error) {
+                    console.error("Error adding PR to Firestore:", error);
+                    // Optionally show an error message to the user
+                }
+
+                prModal.classList.add('hidden');
+                prForm.reset();
+                savePrBtn.disabled = false; // Re-enable button
+                savePrBtn.innerHTML = 'Simpan'; // Reset button text
+            });
+
+            prList.addEventListener('click', async (e) => {
+                if (e.target.closest('.pr-done-btn')) {
+                    const btn = e.target.closest('.pr-done-btn');
+                    const prId = btn.dataset.id; // This is the Firestore document ID
+
+                    if (userId && prId) {
+                        try {
+                            await deleteDoc(doc(db, `artifacts/${currentAppId}/users/${userId}/homeworks`, prId));
+                            console.log("PR deleted from Firestore successfully!");
+                        } catch (error) {
+                            console.error("Error deleting PR from Firestore:", error);
+                            // Optionally show an error message to the user
+                        }
+                    } else {
+                        console.error("User ID or PR ID not available. Cannot delete PR from Firestore.");
+                    }
+                }
+            });
+            
+            // --- Authentication Modal Logic ---
+            authBtn.addEventListener('click', () => {
+                authModal.classList.remove('hidden');
+                authErrorMessage.classList.add('hidden');
+                authForm.reset();
+                setAuthMode(true); // Default to login mode
+            });
+
+            cancelAuthBtn.addEventListener('click', () => {
+                authModal.classList.add('hidden');
+                authErrorMessage.classList.add('hidden');
+                authForm.reset();
+            });
+
+            toggleAuthModeBtn.addEventListener('click', () => {
+                setAuthMode(!isLoginMode);
+            });
+
+            function setAuthMode(mode) {
+                isLoginMode = mode;
+                if (isLoginMode) {
+                    authModalTitle.textContent = 'Login';
+                    authSubmitBtn.textContent = 'Login';
+                    toggleAuthModeBtn.textContent = 'Belum punya akun? Register di sini.';
+                } else {
+                    authModalTitle.textContent = 'Register';
+                    authSubmitBtn.textContent = 'Register';
+                    toggleAuthModeBtn.textContent = 'Sudah punya akun? Login di sini.';
+                }
+                authErrorMessage.classList.add('hidden'); // Clear error message on mode switch
+            }
+
+            authForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                authErrorMessage.classList.add('hidden'); // Clear previous errors
+
+                const email = authEmailInput.value;
+                const password = authPasswordInput.value;
+
+                // Basic validation for email and password length
+                if (!email || !password) {
+                    authErrorMessage.textContent = "Email dan password harus diisi.";
+                    authErrorMessage.classList.remove('hidden');
+                    return;
+                }
+                if (password.length < 6) {
+                    authErrorMessage.textContent = "Password minimal 6 karakter.";
+                    authErrorMessage.classList.remove('hidden');
+                    return;
+                }
+
+                // Disable button and show spinner
+                authSubmitBtn.disabled = true;
+                authSubmitBtn.innerHTML = '<div class="spinner"></div>';
+
+                if (isLoginMode) {
+                    // Login
+                    try {
+                        await signInWithEmailAndPassword(auth, email, password);
+                        authModal.classList.add('hidden');
+                        authForm.reset();
+                        console.log("User logged in successfully!");
+                    } catch (error) {
+                        let errorMessage = "Terjadi kesalahan saat login.";
+                        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                            errorMessage = "Email atau password salah.";
+                        } else if (error.code === 'auth/invalid-email') {
+                            errorMessage = "Format email tidak valid.";
+                        } else {
+                             errorMessage = `Error: ${error.message}`; // General error message
+                        }
+                        authErrorMessage.textContent = errorMessage;
+                        authErrorMessage.classList.remove('hidden');
+                        console.error("Login error:", error.message);
+                    }
+                } else {
+                    // Register
+                    try {
+                        await createUserWithEmailAndPassword(auth, email, password);
+                        authModal.classList.add('hidden');
+                        authForm.reset();
+                        console.log("User registered successfully!");
+                    } catch (error) {
+                        let errorMessage = "Terjadi kesalahan saat registrasi.";
+                        if (error.code === 'auth/email-already-in-use') {
+                            errorMessage = "Email ini sudah terdaftar.";
+                        } else if (error.code === 'auth/weak-password') {
+                            errorMessage = "Password terlalu lemah (minimal 6 karakter).";
+                        } else if (error.code === 'auth/invalid-email') {
+                            errorMessage = "Format email tidak valid.";
+                        } else if (error.code === 'auth/operation-not-allowed') {
+                            errorMessage = "Registrasi email/password tidak diaktifkan. Harap aktifkan di Firebase Console > Authentication > Sign-in method.";
+                        }
+                        else {
+                            errorMessage = `Error: ${error.message}`; // General error message
+                        }
+                        authErrorMessage.textContent = errorMessage;
+                        authErrorMessage.classList.remove('hidden');
+                        console.error("Register error:", error.message);
+                    }
+                }
+                // Re-enable button and reset text
+                authSubmitBtn.disabled = false;
+                authSubmitBtn.innerHTML = isLoginMode ? 'Login' : 'Register';
+            });
+
+            // Google Login
+            googleLoginBtn.addEventListener('click', async () => {
+                authErrorMessage.classList.add('hidden'); // Clear previous errors
+                googleLoginBtn.disabled = true; // Disable button
+                googleLoginBtn.innerHTML = '<div class="spinner"></div><span class="ml-2">Memuat...</span>'; // Show spinner
+
+                try {
+                    await signInWithPopup(auth, googleProvider);
+                    authModal.classList.add('hidden');
+                    console.log("User logged in with Google successfully!");
+                } catch (error) {
+                    let errorMessage = "Terjadi kesalahan saat login dengan Google.";
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        errorMessage = "Pop-up login ditutup.";
+                    } else if (error.code === 'auth/cancelled-popup-request') {
+                        errorMessage = "Permintaan pop-up dibatalkan.";
+                    } else if (error.code === 'auth/operation-not-allowed') {
+                        errorMessage = "Login Google tidak diaktifkan. Harap aktifkan di Firebase Console > Authentication > Sign-in method.";
+                    }
+                    else {
+                        errorMessage = `Error: ${error.message}`;
+                    }
+                    authErrorMessage.textContent = errorMessage;
+                    authErrorMessage.classList.remove('hidden');
+                    console.error("Google login error:", error.message);
+                } finally {
+                    googleLoginBtn.disabled = false; // Re-enable button
+                    googleLoginBtn.innerHTML = `<svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.0003 4.75C14.0263 4.75 15.8453 5.483 17.2023 6.757L20.0483 3.911C18.0673 2.097 15.2303 1 12.0003 1C7.79533 1 4.10933 3.447 2.36833 7.049L5.62633 9.516C6.44633 7.054 8.94833 4.75 12.0003 4.75Z" fill="#EA4335"/>
+                        <path d="M23.0003 12.0003C23.0003 11.3463 22.9463 10.6933 22.8443 10.0533H12.0003V14.3913H18.3983C18.1183 15.6173 17.3473 16.6693 16.2043 17.3883L19.4623 19.8553C21.3193 18.1073 23.0003 15.0643 23.0003 12.0003Z" fill="#4285F4"/>
+                        <path d="M5.62598 14.484C5.24498 13.339 5.03198 12.17 5.03198 11.0003C5.03198 9.83033 5.24498 8.66133 5.62598 7.51633L2.36898 5.04933C1.04198 7.73433 1.04198 10.2663 2.36898 12.9513L5.62598 14.484Z" fill="#FBBC05"/>
+                        <path d="M12.0003 20.25C15.2303 20.25 18.0673 19.143 20.0483 17.329L17.2023 14.483C15.8453 15.757 14.0263 16.49 12.0003 16.49C8.94833 16.49 6.44633 14.186 5.62633 11.724L2.36833 14.191C4.10933 17.793 7.79533 20.25 12.0003 20.25Z" fill="#34A853"/>
+                    </svg>
+                    Login dengan Google`; // Reset button text and icon
+                }
+            });
+
+            logoutBtn.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    console.log("User logged out.");
+                    // onAuthStateChanged listener will handle UI updates
+                } catch (error) {
+                    console.error("Error logging out:", error);
+                    // Optionally show an error message to the user
+                }
+            });
+
+            // Initial render of schedules (PRs will be rendered via onSnapshot)
+            renderSchedules();
+            showDay(currentDayIndex);
+        });
+    </script>
+</body>
+</html>
