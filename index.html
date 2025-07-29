@@ -128,8 +128,8 @@
                     <input type="text" id="pr-desc" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700" required>
                 </div>
                 <div class="mb-6">
-                    <label for="pr-photo" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload Foto (Opsional)</label>
-                    <input type="file" id="pr-photo" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-gray-300 dark:hover:file:bg-gray-600">
+                    <label for="pr-file" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload Foto atau Dokumen (Opsional)</label>
+                    <input type="file" id="pr-file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-gray-300 dark:hover:file:bg-gray-600">
                 </div>
                 <div class="flex justify-end space-x-3">
                     <button type="button" id="cancel-pr-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Batal</button>
@@ -205,7 +205,6 @@
     <script type="module">
         // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        // Re-added specific auth imports for Email/Password and Google
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -307,31 +306,31 @@
             const prList = document.getElementById('pr-list');
             const noPrMessage = document.getElementById('no-pr-message');
             const loadingPrMessage = document.getElementById('loading-pr');
-            const loginPromptMessage = document.getElementById('login-prompt-message'); // Re-added
+            const loginPromptMessage = document.getElementById('login-prompt-message'); 
             const addPrBtn = document.getElementById('add-pr-btn');
             const prModal = document.getElementById('pr-modal');
             const prForm = document.getElementById('pr-form');
             const cancelPrBtn = document.getElementById('cancel-pr-btn');
             const savePrBtn = document.getElementById('save-pr-btn');
             const prDescInput = document.getElementById('pr-desc');
-            const prPhotoInput = document.getElementById('pr-photo');
-            const userIdDisplay = document.getElementById('user-id-display'); // Re-added
+            const prFileInput = document.getElementById('pr-file'); // Changed to prFileInput
+            const userIdDisplay = document.getElementById('user-id-display'); 
             const imageOverlay = document.getElementById('image-overlay');
             const overlayImage = document.getElementById('overlay-image');
 
             // Auth elements
-            const authBtn = document.getElementById('auth-btn'); // Re-added
-            const logoutBtn = document.getElementById('logout-btn'); // Re-added
-            const authModal = document.getElementById('auth-modal'); // Re-added
-            const authModalTitle = document.getElementById('auth-modal-title'); // Re-added
-            const authForm = document.getElementById('auth-form'); // Re-added
-            const authEmailInput = document.getElementById('auth-email'); // Re-added
-            const authPasswordInput = document.getElementById('auth-password'); // Re-added
-            const authSubmitBtn = document.getElementById('auth-submit-btn'); // Re-added
-            const cancelAuthBtn = document.getElementById('cancel-auth-btn'); // Re-added
-            const toggleAuthModeBtn = document.getElementById('toggle-auth-mode'); // Re-added
-            const authErrorMessage = document.getElementById('auth-error-message'); // Re-added
-            const googleLoginBtn = document.getElementById('google-login-btn'); // Re-added
+            const authBtn = document.getElementById('auth-btn'); 
+            const logoutBtn = document.getElementById('logout-btn'); 
+            const authModal = document.getElementById('auth-modal'); 
+            const authModalTitle = document.getElementById('auth-modal-title'); 
+            const authForm = document.getElementById('auth-form'); 
+            const authEmailInput = document.getElementById('auth-email'); 
+            const authPasswordInput = document.getElementById('auth-password'); 
+            const authSubmitBtn = document.getElementById('auth-submit-btn'); 
+            const cancelAuthBtn = document.getElementById('cancel-auth-btn'); 
+            const toggleAuthModeBtn = document.getElementById('toggle-auth-mode'); 
+            const authErrorMessage = document.getElementById('auth-error-message'); 
+            const googleLoginBtn = document.getElementById('google-login-btn'); 
 
             // LLM elements
             const llmResponseModal = document.getElementById('llm-response-modal');
@@ -343,10 +342,20 @@
 
             let isLoginMode = true; // true for login, false for register
 
-            // Function to show full image in a new overlay
-            window.showImage = (src) => {
-                overlayImage.src = src;
-                imageOverlay.classList.remove('hidden');
+            // Function to handle file clicks (view image or download document)
+            window.handleFileClick = (dataUrl, fileType, fileName) => {
+                if (fileType && fileType.startsWith('image/')) {
+                    overlayImage.src = dataUrl;
+                    imageOverlay.classList.remove('hidden');
+                } else {
+                    // For non-image files, trigger download
+                    const a = document.createElement('a');
+                    a.href = dataUrl;
+                    a.download = fileName || 'document';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
             };
 
             imageOverlay.addEventListener('click', () => {
@@ -524,14 +533,26 @@
                         // Increased padding and added responsive flexbox for better layout on all devices
                         prItem.className = 'p-4 bg-gray-100 dark:bg-gray-700 rounded-lg flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3';
                         
-                        let imgHtml = '';
-                        if (pr.imageUrl) {
-                            // Made image slightly larger on small screens for better visibility
-                            imgHtml = `<img src="${pr.imageUrl}" alt="PR photo" class="w-20 h-20 sm:w-16 sm:h-16 rounded-md object-cover cursor-pointer flex-shrink-0">`;
+                        let fileDisplayHtml = '';
+                        if (pr.fileDataUrl) {
+                            if (pr.fileType && pr.fileType.startsWith('image/')) {
+                                // Image display
+                                fileDisplayHtml = `<img src="${pr.fileDataUrl}" alt="PR photo" class="w-20 h-20 sm:w-16 sm:h-16 rounded-md object-cover cursor-pointer flex-shrink-0" onclick="window.handleFileClick('${pr.fileDataUrl}', '${pr.fileType}', '${pr.fileName}')">`;
+                            } else {
+                                // Document display with generic icon and download link
+                                fileDisplayHtml = `
+                                    <div class="flex items-center space-x-2 flex-shrink-0 cursor-pointer" onclick="window.handleFileClick('${pr.fileDataUrl}', '${pr.fileType}', '${pr.fileName}')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                                        </svg>
+                                        <span class="text-blue-500 hover:underline text-sm sm:text-base break-all">${pr.fileName || 'Dokumen'}</span>
+                                    </div>
+                                `;
+                            }
                         }
 
                         prItem.innerHTML = `
-                            ${imgHtml}
+                            ${fileDisplayHtml}
                             <div class="flex-grow w-full"> <!-- Added w-full to ensure text takes available width -->
                                 <p class="font-medium text-base sm:text-lg mb-2">${pr.description}</p> <!-- Increased font size for readability -->
                                 <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full">
@@ -579,32 +600,38 @@
                 savePrBtn.innerHTML = '<div class="spinner"></div>'; // Show spinner
 
                 const description = prDescInput.value;
-                const photoFile = prPhotoInput.files[0];
-                let imageUrl = null;
+                const uploadedFile = prFileInput.files[0]; // Changed to prFileInput
+                let fileDataUrl = null;
+                let fileType = null;
+                let fileName = null;
 
-                // Handle image file asynchronously
-                if (photoFile) {
+                // Handle file asynchronously
+                if (uploadedFile) {
+                    fileType = uploadedFile.type;
+                    fileName = uploadedFile.name;
                     try {
-                        imageUrl = await new Promise((resolve, reject) => {
+                        fileDataUrl = await new Promise((resolve, reject) => {
                             const reader = new FileReader();
                             reader.onload = (event) => resolve(event.target.result);
                             reader.onerror = (error) => reject(error);
-                            reader.readAsDataURL(photoFile);
+                            reader.readAsDataURL(uploadedFile);
                         });
                     } catch (error) {
-                        console.error("Error reading image file:", error);
+                        console.error("Error reading file:", error);
                         // Optionally show an error message to the user
                         savePrBtn.disabled = false;
                         savePrBtn.innerHTML = 'Simpan';
-                        return; // Stop execution if image reading fails
+                        return; // Stop execution if file reading fails
                     }
                 }
 
-                // Now that imageUrl is ready (or null if no photo), save to Firestore
+                // Now that fileDataUrl is ready (or null if no file), save to Firestore
                 try {
                     await addDoc(collection(db, `artifacts/${currentAppId}/users/${userId}/homeworks`), {
                         description: description,
-                        imageUrl: imageUrl,
+                        fileDataUrl: fileDataUrl, // Renamed from imageUrl
+                        fileType: fileType,       // New field
+                        fileName: fileName,       // New field
                         timestamp: Date.now() // Add a timestamp for sorting
                     });
                     console.log("PR added to Firestore successfully!");
@@ -822,7 +849,7 @@
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    const apiKey = "AIzaSyBfVzaIGOp7pqRru-MT4M09ch01mVVlJW8"; 
+                    const apiKey = ""; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
                     const response = await fetch(apiUrl, {
@@ -860,7 +887,7 @@
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    const apiKey = "AIzaSyBfVzaIGOp7pqRru-MT4M09ch01mVVlJW8"; 
+                    const apiKey = ""; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
                     const response = await fetch(apiUrl, {
