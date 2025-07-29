@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jadwal Pelajaran Interaktif</title>
@@ -56,6 +57,21 @@
     <div class="w-full max-w-md mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col" style="height: 90vh;">
         
         <!-- Header -->
+        <form id="prForm" class="space-y-4">
+  <div>
+    <label for="descriptionInput">Deskripsi PR</label>
+    <input id="descriptionInput" type="text" required class="w-full p-2 rounded" />
+  </div>
+  <div>
+    <label for="photoInput">Foto PR (Opsional)</label>
+    <input id="photoInput" type="file" accept="image/*" class="w-full" />
+  </div>
+  <button type="submit" class="bg-blue-600 px-4 py-2 rounded text-white">Simpan</button>
+</form>
+
+<!-- Tempat tampilkan daftar PR -->
+<div id="prList" class="mt-6 space-y-2">
+</div>
         <header class="p-4 bg-blue-600 dark:bg-blue-700 text-white shadow-md">
             <h1 class="text-2xl font-bold text-center">Jadwal Pelajaran</h1>
             <p class="text-center text-blue-200">Kelas 12-1 (A1)</p>
@@ -383,5 +399,74 @@
             document.body.appendChild(overlay);
         }
     </script>
+    <script>
+  const supabase = supabase.createClient(
+    https://paksbrfdyrjslmxrbrdg.supabase.co,
+    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBha3NicmZkeXJqc2xteHJicmRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM3ODEwNjQsImV4cCI6MjA2OTM1NzA2NH0.OFiXCkzzYw9e0lp0aJjWRKPuvRSsWrZLanO90fgNWEk
+  );
+
+  const form = document.getElementById('prForm');
+  const descInput = document.getElementById('descriptionInput');
+  const photoInput = document.getElementById('photoInput');
+  const prList = document.getElementById('prList');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const description = descInput.value;
+    const photoFile = photoInput.files[0];
+    let imageUrl = null;
+
+    if (photoFile) {
+      const fileName = `${Date.now()}_${photoFile.name}`;
+      const { data, error } = await supabase.storage
+        .from('pr_photos')
+        .upload(fileName, photoFile);
+
+      if (error) {
+        alert('Upload foto gagal');
+        return;
+      }
+
+      imageUrl = `https://YOUR_PROJECT_ID.supabase.co/storage/v1/object/public/pr_photos/${fileName}`;
+    }
+
+    const { error: insertError } = await supabase
+      .from('homeworks')
+      .insert([{ description, image_url: imageUrl }]);
+
+    if (insertError) {
+      alert('Gagal menyimpan data');
+      return;
+    }
+
+    form.reset();
+    fetchPRs();
+  });
+
+  async function fetchPRs() {
+    const { data, error } = await supabase
+      .from('homeworks')
+      .select('*')
+      .order('timestamp', { ascending: false });
+
+    if (error) {
+      alert('Gagal mengambil data PR');
+      return;
+    }
+
+    prList.innerHTML = '';
+    data.forEach((pr) => {
+      const item = document.createElement('div');
+      item.className = 'bg-gray-800 p-3 rounded text-white';
+      item.innerHTML = `
+        <p>${pr.description}</p>
+        ${pr.image_url ? `<img src="${pr.image_url}" class="mt-2 max-h-48 rounded" />` : ''}
+      `;
+      prList.appendChild(item);
+    });
+  }
+
+  fetchPRs();
+</script>
 </body>
 </html>
