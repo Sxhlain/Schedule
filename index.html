@@ -106,9 +106,9 @@
                     Tambah PR
                 </button>
             </div>
-            <div id="pr-list" class="flex-grow overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+            <div id="pr-list" class="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                 <!-- PR items will be injected here by JS -->
-                 <p id="no-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8">Belum ada PR. Selamat! 🎉</p>
+                 <p id="no-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8 hidden">Belum ada PR. Selamat! 🎉</p>
                  <div id="loading-pr" class="flex justify-center items-center py-4 hidden">
                     <div class="spinner"></div>
                     <span class="ml-2 text-gray-500 dark:text-gray-400">Memuat PR...</span>
@@ -187,7 +187,7 @@
     <div id="llm-response-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-40">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">Bantuan PR ✨</h2>
+                <h2 class="text-xl font-bold" id="llm-modal-title">Bantuan PR ✨</h2>
                 <button id="close-llm-modal-btn" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
@@ -205,6 +205,7 @@
     <script type="module">
         // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        // Re-added specific auth imports for Email/Password and Google
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -217,7 +218,6 @@
         console.log("Firebase Config yang digunakan:", currentFirebaseConfig);
 
         // Explicitly use the user's provided config for testing, if it's different from __firebase_config
-        // This is a temporary measure for debugging if __firebase_config is somehow wrong
         const userProvidedFirebaseConfig = {
             apiKey: "AIzaSyCU1cQlzZ6AJI7UAfMsjEmb2mTe15KG9cQ",
             authDomain: "class-schedule-f7cea.firebaseapp.com",
@@ -307,7 +307,7 @@
             const prList = document.getElementById('pr-list');
             const noPrMessage = document.getElementById('no-pr-message');
             const loadingPrMessage = document.getElementById('loading-pr');
-            const loginPromptMessage = document.getElementById('login-prompt-message');
+            const loginPromptMessage = document.getElementById('login-prompt-message'); // Re-added
             const addPrBtn = document.getElementById('add-pr-btn');
             const prModal = document.getElementById('pr-modal');
             const prForm = document.getElementById('pr-form');
@@ -315,23 +315,23 @@
             const savePrBtn = document.getElementById('save-pr-btn');
             const prDescInput = document.getElementById('pr-desc');
             const prPhotoInput = document.getElementById('pr-photo');
-            const userIdDisplay = document.getElementById('user-id-display');
+            const userIdDisplay = document.getElementById('user-id-display'); // Re-added
             const imageOverlay = document.getElementById('image-overlay');
             const overlayImage = document.getElementById('overlay-image');
 
             // Auth elements
-            const authBtn = document.getElementById('auth-btn');
-            const logoutBtn = document.getElementById('logout-btn');
-            const authModal = document.getElementById('auth-modal');
-            const authModalTitle = document.getElementById('auth-modal-title');
-            const authForm = document.getElementById('auth-form');
-            const authEmailInput = document.getElementById('auth-email');
-            const authPasswordInput = document.getElementById('auth-password');
-            const authSubmitBtn = document.getElementById('auth-submit-btn');
-            const cancelAuthBtn = document.getElementById('cancel-auth-btn');
-            const toggleAuthModeBtn = document.getElementById('toggle-auth-mode');
-            const authErrorMessage = document.getElementById('auth-error-message');
-            const googleLoginBtn = document.getElementById('google-login-btn'); // New Google login button
+            const authBtn = document.getElementById('auth-btn'); // Re-added
+            const logoutBtn = document.getElementById('logout-btn'); // Re-added
+            const authModal = document.getElementById('auth-modal'); // Re-added
+            const authModalTitle = document.getElementById('auth-modal-title'); // Re-added
+            const authForm = document.getElementById('auth-form'); // Re-added
+            const authEmailInput = document.getElementById('auth-email'); // Re-added
+            const authPasswordInput = document.getElementById('auth-password'); // Re-added
+            const authSubmitBtn = document.getElementById('auth-submit-btn'); // Re-added
+            const cancelAuthBtn = document.getElementById('cancel-auth-btn'); // Re-added
+            const toggleAuthModeBtn = document.getElementById('toggle-auth-mode'); // Re-added
+            const authErrorMessage = document.getElementById('auth-error-message'); // Re-added
+            const googleLoginBtn = document.getElementById('google-login-btn'); // Re-added
 
             // LLM elements
             const llmResponseModal = document.getElementById('llm-response-modal');
@@ -339,7 +339,7 @@
             const llmResponseContent = document.getElementById('llm-response-content');
             const llmLoadingSpinner = document.getElementById('llm-loading-spinner');
             const llmResponseText = document.getElementById('llm-response-text');
-
+            const llmModalTitle = document.getElementById('llm-modal-title');
 
             let isLoginMode = true; // true for login, false for register
 
@@ -409,6 +409,11 @@
                     homeworks.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
                     renderPRs();
                     loadingPrMessage.classList.add('hidden'); // Hide loading spinner
+                    if (homeworks.length === 0) {
+                        noPrMessage.classList.remove('hidden');
+                    } else {
+                        noPrMessage.classList.add('hidden');
+                    }
                 }, (error) => {
                     console.error("Error fetching homeworks:", error);
                     loadingPrMessage.classList.add('hidden'); // Hide loading spinner on error
@@ -516,23 +521,29 @@
                     noPrMessage.classList.add('hidden');
                     homeworks.forEach(pr => {
                         const prItem = document.createElement('div');
-                        prItem.className = 'p-3 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-start space-x-3';
+                        // Increased padding and added responsive flexbox for better layout on all devices
+                        prItem.className = 'p-4 bg-gray-100 dark:bg-gray-700 rounded-lg flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3';
                         
                         let imgHtml = '';
                         if (pr.imageUrl) {
-                            // Use window.showImage for click handler
-                            imgHtml = `<img src="${pr.imageUrl}" alt="PR photo" class="w-16 h-16 rounded-md object-cover cursor-pointer" onclick="window.showImage('${pr.imageUrl}')">`;
+                            // Made image slightly larger on small screens for better visibility
+                            imgHtml = `<img src="${pr.imageUrl}" alt="PR photo" class="w-20 h-20 sm:w-16 sm:h-16 rounded-md object-cover cursor-pointer flex-shrink-0">`;
                         }
 
                         prItem.innerHTML = `
                             ${imgHtml}
-                            <div class="flex-grow">
-                                <p class="font-medium">${pr.description}</p>
-                                <button data-description="${pr.description}" class="explain-pr-btn mt-2 px-3 py-1 bg-purple-500 text-white text-sm rounded-md hover:bg-purple-600 transition-transform transform hover:scale-105">
-                                    ✨ Jelaskan PR
-                                </button>
+                            <div class="flex-grow w-full"> <!-- Added w-full to ensure text takes available width -->
+                                <p class="font-medium text-base sm:text-lg mb-2">${pr.description}</p> <!-- Increased font size for readability -->
+                                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full">
+                                    <button data-description="${pr.description}" class="explain-pr-btn px-3 py-1 bg-purple-500 text-white text-sm rounded-md hover:bg-purple-600 transition-transform transform hover:scale-105 w-full sm:w-auto">
+                                        ✨ Jelaskan PR
+                                    </button>
+                                    <button data-description="${pr.description}" class="suggest-plan-btn px-3 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-transform transform hover:scale-105 w-full sm:w-auto">
+                                        ✨ Rencana Belajar
+                                    </button>
+                                </div>
                             </div>
-                            <button data-id="${pr.id}" class="pr-done-btn flex-shrink-0 p-2 bg-green-500 text-white rounded-full hover:bg-green-600">
+                            <button data-id="${pr.id}" class="pr-done-btn flex-shrink-0 p-2 bg-green-500 text-white rounded-full hover:bg-green-600 self-end sm:self-center mt-2 sm:mt-0"> <!-- Adjusted button alignment for responsiveness -->
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
                             </button>
                         `;
@@ -543,8 +554,9 @@
 
             addPrBtn.addEventListener('click', () => {
                 if (!userId) {
-                    // This should ideally not be reachable if button is hidden
                     console.warn("User not logged in. Cannot add PR.");
+                    // Show login prompt if not logged in
+                    loginPromptMessage.classList.remove('hidden');
                     return;
                 }
                 prModal.classList.remove('hidden');
@@ -627,7 +639,15 @@
                     const btn = e.target.closest('.explain-pr-btn');
                     const description = btn.dataset.description;
                     if (description) {
+                        llmModalTitle.textContent = "Bantuan PR ✨"; // Set modal title for explanation
                         explainHomework(description);
+                    }
+                } else if (e.target.closest('.suggest-plan-btn')) {
+                    const btn = e.target.closest('.suggest-plan-btn');
+                    const description = btn.dataset.description;
+                    if (description) {
+                        llmModalTitle.textContent = "Rencana Belajar ✨"; // Set modal title for study plan
+                        suggestStudyPlan(description);
                     }
                 }
             });
@@ -802,7 +822,7 @@
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
+                    const apiKey = "AIzaSyBfVzaIGOp7pqRru-MT4M09ch01mVVlJW8"; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
                     const response = await fetch(apiUrl, {
@@ -824,7 +844,45 @@
                     }
                 } catch (error) {
                     llmResponseText.textContent = "Terjadi kesalahan saat menghubungi AI. Pastikan koneksi internet Anda stabil.";
-                    console.error("Error calling Gemini API:", error);
+                    console.error("Error calling Gemini API for explanation:", error);
+                } finally {
+                    llmLoadingSpinner.classList.add('hidden');
+                }
+            }
+
+            async function suggestStudyPlan(description) {
+                llmResponseModal.classList.remove('hidden');
+                llmLoadingSpinner.classList.remove('hidden');
+                llmResponseText.textContent = ''; // Clear previous response
+
+                try {
+                    const prompt = `Buat rencana belajar singkat untuk pekerjaan rumah ini: "${description}". Sertakan langkah-langkah, perkiraan waktu, dan fokus utama.`;
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = "AIzaSyBfVzaIGOp7pqRru-MT4M09ch01mVVlJW8"; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        llmResponseText.textContent = text;
+                    } else {
+                        llmResponseText.textContent = "Maaf, tidak dapat menghasilkan rencana belajar untuk saat ini. Coba lagi nanti.";
+                        console.error("Unexpected LLM response structure for study plan:", result);
+                    }
+                } catch (error) {
+                    llmResponseText.textContent = "Terjadi kesalahan saat menghubungi AI untuk rencana belajar. Pastikan koneksi internet Anda stabil.";
+                    console.error("Error calling Gemini API for study plan:", error);
                 } finally {
                     llmLoadingSpinner.classList.add('hidden');
                 }
