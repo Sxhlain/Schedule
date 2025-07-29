@@ -6,6 +6,10 @@
     <title>Jadwal Pelajaran Interaktif</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -114,6 +118,20 @@
     </div>
 
     <script>
+    // GANTI DENGAN KONFIGURASI DARI FIREBASE PROJECT-MU
+    const firebaseConfig = {
+        apiKey: "ISI_API_KEY_KAMU",
+        authDomain: "project-id.firebaseapp.com",
+        projectId: "project-id",
+        storageBucket: "project-id.appspot.com",
+        messagingSenderId: "xxxxxxxxx",
+        appId: "xxxxxxxxxxxxxxxxxxxxxxxx"
+    };
+
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
         document.addEventListener('DOMContentLoaded', () => {
             const scheduleData = [
                 {
