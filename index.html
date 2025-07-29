@@ -49,6 +49,22 @@
         .slide-to-right {
             transform: translateX(100%);
         }
+
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 flex items-center justify-center min-h-screen p-4">
@@ -59,6 +75,7 @@
         <header class="p-4 bg-blue-600 dark:bg-blue-700 text-white shadow-md">
             <h1 class="text-2xl font-bold text-center">Jadwal Pelajaran</h1>
             <p class="text-center text-blue-200">Kelas 12-1 (A1)</p>
+            <!-- Login/Register/Logout buttons removed -->
         </header>
 
         <!-- Schedule Section -->
@@ -87,13 +104,18 @@
             </div>
             <div id="pr-list" class="flex-grow overflow-y-auto space-y-3 pr-2 custom-scrollbar">
                 <!-- PR items will be injected here by JS -->
-                 <p id="no-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8">Belum ada PR. Selamat! 🎉</p>
+                 <p id="no-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8 hidden">Belum ada PR. Selamat! 🎉</p>
+                 <div id="loading-pr" class="flex justify-center items-center py-4 hidden">
+                    <div class="spinner"></div>
+                    <span class="ml-2 text-gray-500 dark:text-gray-400">Memuat PR...</span>
+                </div>
+                <!-- Login prompt message removed -->
             </div>
         </div>
     </div>
 
     <!-- Modal for adding PR -->
-    <div id="pr-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden">
+    <div id="pr-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-40">
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
             <h2 class="text-xl font-bold mb-4">Tambah PR Baru</h2>
             <form id="pr-form">
@@ -107,14 +129,81 @@
                 </div>
                 <div class="flex justify-end space-x-3">
                     <button type="button" id="cancel-pr-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Simpan</button>
+                    <button type="submit" id="save-pr-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Simpan</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
+    <!-- Auth Modal removed -->
+
+    <!-- Image overlay for full view -->
+    <div id="image-overlay" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50">
+        <img id="overlay-image" src="" alt="Full PR Photo" class="max-w-full max-h-full rounded-lg shadow-lg">
+    </div>
+
+    <!-- New Modal for LLM Response -->
+    <div id="llm-response-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-40">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Bantuan PR ✨</h2>
+                <button id="close-llm-modal-btn" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div id="llm-response-content" class="text-gray-700 dark:text-gray-300 max-h-80 overflow-y-auto custom-scrollbar">
+                <div id="llm-loading-spinner" class="flex justify-center items-center py-4 hidden">
+                    <div class="spinner"></div>
+                    <span class="ml-2 text-gray-500 dark:text-gray-400">Memuat penjelasan...</span>
+                </div>
+                <p id="llm-response-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        // Removed specific auth imports like createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Initialize Firebase
+        const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const currentFirebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+        // Log the config being used for debugging
+        console.log("App ID yang digunakan:", currentAppId);
+        console.log("Firebase Config yang digunakan:", currentFirebaseConfig);
+
+        // Explicitly use the user's provided config for testing, if it's different from __firebase_config
+        // This is a temporary measure for debugging if __firebase_config is somehow wrong
+        const userProvidedFirebaseConfig = {
+            apiKey: "AIzaSyCU1cQlzZ6AJI7UAfMsjEmb2mTe15KG9cQ",
+            authDomain: "class-schedule-f7cea.firebaseapp.com",
+            databaseURL: "https://class-schedule-f7cea-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "class-schedule-f7cea",
+            storageBucket: "class-schedule-f7cea.firebasestorage.app",
+            messagingSenderId: "192764707551",
+            appId: "1:192764707551:web:051bb288069e895c4b1f6a",
+            measurementId: "G-RF6ZMC9L7F"
+        };
+        
+        // Prioritize __firebase_config if it's available and not empty, otherwise use the hardcoded one.
+        const effectiveFirebaseConfig = Object.keys(currentFirebaseConfig).length > 0 ? currentFirebaseConfig : userProvidedFirebaseConfig;
+
+        console.log("Effective Firebase Config (yang akan diinisialisasi):", effectiveFirebaseConfig);
+
+        const app = initializeApp(effectiveFirebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        // GoogleAuthProvider removed
+
+        let userId = null; // Will store the authenticated user ID
+        let homeworks = []; // Local array to hold homework data
+        let unsubscribeSnapshot = null; // To store the unsubscribe function for Firestore listener
+
+        document.addEventListener('DOMContentLoaded', async () => {
             const scheduleData = [
                 {
                     day: 'Senin',
@@ -177,211 +266,89 @@
             // PR elements
             const prList = document.getElementById('pr-list');
             const noPrMessage = document.getElementById('no-pr-message');
+            const loadingPrMessage = document.getElementById('loading-pr');
+            // Removed loginPromptMessage
             const addPrBtn = document.getElementById('add-pr-btn');
             const prModal = document.getElementById('pr-modal');
             const prForm = document.getElementById('pr-form');
             const cancelPrBtn = document.getElementById('cancel-pr-btn');
+            const savePrBtn = document.getElementById('save-pr-btn');
             const prDescInput = document.getElementById('pr-desc');
             const prPhotoInput = document.getElementById('pr-photo');
+            // Removed userIdDisplay
+            const imageOverlay = document.getElementById('image-overlay');
+            const overlayImage = document.getElementById('overlay-image');
 
-            let homeworks = [];
+            // Auth elements removed
+            // LLM elements
+            const llmResponseModal = document.getElementById('llm-response-modal');
+            const closeLlmModalBtn = document.getElementById('close-llm-modal-btn');
+            const llmResponseContent = document.getElementById('llm-response-content');
+            const llmLoadingSpinner = document.getElementById('llm-loading-spinner');
+            const llmResponseText = document.getElementById('llm-response-text');
 
-            function renderSchedules() {
-                scheduleContainer.innerHTML = '';
-                scheduleData.forEach((day, index) => {
-                    const dayDiv = document.createElement('div');
-                    dayDiv.id = `day-${index}`;
-                    dayDiv.className = 'day-schedule w-full';
-                    if (index !== currentDayIndex) {
-                        dayDiv.classList.add('hidden');
+
+            // Function to show full image in a new overlay
+            window.showImage = (src) => {
+                overlayImage.src = src;
+                imageOverlay.classList.remove('hidden');
+            };
+
+            imageOverlay.addEventListener('click', () => {
+                imageOverlay.classList.add('hidden');
+            });
+
+            // Firebase Authentication (Anonymous) and Data Loading
+            // Sign in anonymously immediately to get a user ID for Firestore
+            try {
+                const userCredential = await signInAnonymously(auth);
+                userId = userCredential.user.uid;
+                console.log("Signed in anonymously. User ID:", userId);
+                listenForHomeworks(); // Start listening for homeworks after anonymous login
+            } catch (error) {
+                console.error("Error signing in anonymously:", error);
+                // Handle error (e.g., display a message to the user that data cannot be saved/loaded)
+            }
+
+            function listenForHomeworks() {
+                if (!userId) {
+                    console.warn("User ID not available for listening to homeworks.");
+                    return;
+                }
+
+                // Unsubscribe from previous listener if exists
+                if (unsubscribeSnapshot) {
+                    unsubscribeSnapshot();
+                }
+
+                loadingPrMessage.classList.remove('hidden'); // Show loading spinner
+                noPrMessage.classList.add('hidden'); // Hide no PR message
+                const homeworksCollectionRef = collection(db, `artifacts/${currentAppId}/users/${userId}/homeworks`);
+                
+                // Use onSnapshot to get real-time updates
+                unsubscribeSnapshot = onSnapshot(homeworksCollectionRef, (snapshot) => {
+                    homeworks = [];
+                    snapshot.forEach(doc => {
+                        // Add Firestore document ID to the homework object
+                        homeworks.push({ id: doc.id, ...doc.data() });
+                    });
+                    // Sort homeworks by timestamp if needed (Firestore orderBy is disabled to avoid index issues)
+                    homeworks.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                    renderPRs();
+                    loadingPrMessage.classList.add('hidden'); // Hide loading spinner
+                    if (homeworks.length === 0) {
+                        noPrMessage.classList.remove('hidden');
+                    } else {
+                        noPrMessage.classList.add('hidden');
                     }
-
-                    const subjectsHtml = day.subjects.map(subject => `
-                        <div class="flex items-center p-3 rounded-lg mb-2 ${subject.color} ${subject.textColor} shadow-sm">
-                            <span class="font-medium w-28">${subject.time}</span>
-                            <span class="font-semibold">${subject.name}</span>
-                        </div>
-                    `).join('');
-
-                    dayDiv.innerHTML = `<div class="space-y-2">${subjectsHtml}</div>`;
-                    scheduleContainer.appendChild(dayDiv);
+                }, (error) => {
+                    console.error("Error fetching homeworks:", error);
+                    loadingPrMessage.classList.add('hidden'); // Hide loading spinner on error
+                    // Display an error message to the user if needed
                 });
             }
 
-            function updateDisplay(oldIndex, direction) {
-                dayTitle.textContent = scheduleData[currentDayIndex].day;
-                
-                const oldDayDiv = document.getElementById(`day-${oldIndex}`);
-                const newDayDiv = document.getElementById(`day-${currentDayIndex}`);
 
-                if (oldDayDiv && newDayDiv && oldIndex !== currentDayIndex) {
-                    scheduleContainer.style.height = `${Math.max(oldDayDiv.clientHeight, newDayDiv.clientHeight)}px`;
-                    
-                    oldDayDiv.classList.add('absolute');
-                    newDayDiv.classList.remove('hidden');
-                    
-                    if (direction === 'next') {
-                        newDayDiv.classList.add('slide-from-right');
-                        requestAnimationFrame(() => {
-                            oldDayDiv.classList.add('slide-to-left');
-                            newDayDiv.classList.remove('slide-from-right');
-                        });
-                    } else {
-                        newDayDiv.classList.add('slide-from-left');
-                        requestAnimationFrame(() => {
-                            oldDayDiv.classList.add('slide-to-right');
-                            newDayDiv.classList.remove('slide-from-left');
-                        });
-                    }
-
-                    newDayDiv.addEventListener('transitionend', () => {
-                        oldDayDiv.classList.add('hidden');
-                        oldDayDiv.classList.remove('absolute', 'slide-to-left', 'slide-to-right');
-                        scheduleContainer.style.height = '';
-                    }, { once: true });
-                } else if (newDayDiv) {
-                     newDayDiv.classList.remove('hidden');
-                }
-            }
-            
-            function showDay(index, direction) {
-                const oldIndex = currentDayIndex;
-                currentDayIndex = (index + scheduleData.length) % scheduleData.length;
-                updateDisplay(oldIndex, direction);
-            }
-
-            prevDayBtn.addEventListener('click', () => showDay(currentDayIndex - 1, 'prev'));
-            nextDayBtn.addEventListener('click', () => showDay(currentDayIndex + 1, 'next'));
-
-            // Swipe functionality
-            let touchStartX = 0;
-            let touchEndX = 0;
-
-            scheduleContainer.addEventListener('touchstart', (e) => {
-                touchStartX = e.changedTouches[0].screenX;
-            }, { passive: true });
-
-            scheduleContainer.addEventListener('touchend', (e) => {
-                touchEndX = e.changedTouches[0].screenX;
-                handleSwipe();
-            });
-
-            function handleSwipe() {
-                if (touchEndX < touchStartX - 50) { // Swiped left
-                    showDay(currentDayIndex + 1, 'next');
-                }
-                if (touchEndX > touchStartX + 50) { // Swiped right
-                    showDay(currentDayIndex - 1, 'prev');
-                }
-            }
-
-            // PR functionality
-            function renderPRs() {
-                prList.innerHTML = '';
-                if (homeworks.length === 0) {
-                    prList.appendChild(noPrMessage);
-                    noPrMessage.classList.remove('hidden');
-                } else {
-                    noPrMessage.classList.add('hidden');
-                    homeworks.forEach(pr => {
-                        const prItem = document.createElement('div');
-                        prItem.className = 'p-3 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-start space-x-3';
-                        
-                        let imgHtml = '';
-                        if (pr.imageUrl) {
-                            imgHtml = `<img src="${pr.imageUrl}" alt="PR photo" class="w-16 h-16 rounded-md object-cover cursor-pointer" onclick="showImage('${pr.imageUrl}')">`;
-                        }
-
-                        prItem.innerHTML = `
-                            ${imgHtml}
-                            <div class="flex-grow">
-                                <p class="font-medium">${pr.description}</p>
-                            </div>
-                            <button data-id="${pr.id}" class="pr-done-btn flex-shrink-0 p-2 bg-green-500 text-white rounded-full hover:bg-green-600">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
-                            </button>
-                        `;
-                        prList.appendChild(prItem);
-                    });
-                }
-            }
-
-            addPrBtn.addEventListener('click', () => {
-                prModal.classList.remove('hidden');
-            });
-
-            cancelPrBtn.addEventListener('click', () => {
-                prModal.classList.add('hidden');
-                prForm.reset();
-            });
-
-            prForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const description = prDescInput.value;
-                const photoFile = prPhotoInput.files[0];
-
-                const newPr = {
-                    id: Date.now(),
-                    description: description,
-                    imageUrl: null
-                };
-
-                if (photoFile) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                        newPr.imageUrl = event.target.result;
-                        homeworks.push(newPr);
-                        renderPRs();
-                    };
-                    reader.readAsDataURL(photoFile);
-                } else {
-                    homeworks.push(newPr);
-                    renderPRs();
-                }
-
-                prModal.classList.add('hidden');
-                prForm.reset();
-            });
-
-            prList.addEventListener('click', (e) => {
-                if (e.target.closest('.pr-done-btn')) {
-                    const btn = e.target.closest('.pr-done-btn');
-                    const prId = parseInt(btn.dataset.id);
-                    homeworks = homeworks.filter(pr => pr.id !== prId);
-                    renderPRs();
-                }
-            });
-            
-            // Initial render
-            renderSchedules();
-            showDay(currentDayIndex);
-            renderPRs();
-        });
-
-        // Function to show full image in a new overlay
-        function showImage(src) {
-            const overlay = document.createElement('div');
-            overlay.style.position = 'fixed';
-            overlay.style.top = '0';
-            overlay.style.left = '0';
-            overlay.style.width = '100%';
-            overlay.style.height = '100%';
-            overlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
-            overlay.style.display = 'flex';
-            overlay.style.alignItems = 'center';
-            overlay.style.justifyContent = 'center';
-            overlay.style.zIndex = '1000';
-            overlay.onclick = () => document.body.removeChild(overlay);
-
-            const img = document.createElement('img');
-            img.src = src;
-            img.style.maxWidth = '90%';
-            img.style.maxHeight = '90%';
-            img.style.borderRadius = '8px';
-
-            overlay.appendChild(img);
-            document.body.appendChild(overlay);
-        }
-    </script>
-</body>
-</html>
+            function renderSchedules() {
+                scheduleContainer.innerHTML = '';
+                sche
