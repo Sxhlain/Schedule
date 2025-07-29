@@ -179,8 +179,27 @@
     </div>
 
     <!-- Image overlay for full view -->
-    <div id="image-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+    <div id="image-overlay" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 hidden z-50">
         <img id="overlay-image" src="" alt="Full PR Photo" class="max-w-full max-h-full rounded-lg shadow-lg">
+    </div>
+
+    <!-- New Modal for LLM Response -->
+    <div id="llm-response-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-40">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">Bantuan PR ✨</h2>
+                <button id="close-llm-modal-btn" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div id="llm-response-content" class="text-gray-700 dark:text-gray-300 max-h-80 overflow-y-auto custom-scrollbar">
+                <div id="llm-loading-spinner" class="flex justify-center items-center py-4 hidden">
+                    <div class="spinner"></div>
+                    <span class="ml-2 text-gray-500 dark:text-gray-400">Memuat penjelasan...</span>
+                </div>
+                <p id="llm-response-text"></p>
+            </div>
+        </div>
     </div>
 
     <script type="module">
@@ -313,6 +332,14 @@
             const toggleAuthModeBtn = document.getElementById('toggle-auth-mode');
             const authErrorMessage = document.getElementById('auth-error-message');
             const googleLoginBtn = document.getElementById('google-login-btn'); // New Google login button
+
+            // LLM elements
+            const llmResponseModal = document.getElementById('llm-response-modal');
+            const closeLlmModalBtn = document.getElementById('close-llm-modal-btn');
+            const llmResponseContent = document.getElementById('llm-response-content');
+            const llmLoadingSpinner = document.getElementById('llm-loading-spinner');
+            const llmResponseText = document.getElementById('llm-response-text');
+
 
             let isLoginMode = true; // true for login, false for register
 
@@ -501,6 +528,9 @@
                             ${imgHtml}
                             <div class="flex-grow">
                                 <p class="font-medium">${pr.description}</p>
+                                <button data-description="${pr.description}" class="explain-pr-btn mt-2 px-3 py-1 bg-purple-500 text-white text-sm rounded-md hover:bg-purple-600 transition-transform transform hover:scale-105">
+                                    ✨ Jelaskan PR
+                                </button>
                             </div>
                             <button data-id="${pr.id}" class="pr-done-btn flex-shrink-0 p-2 bg-green-500 text-white rounded-full hover:bg-green-600">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
@@ -592,6 +622,12 @@
                         }
                     } else {
                         console.error("User ID or PR ID not available. Cannot delete PR from Firestore.");
+                    }
+                } else if (e.target.closest('.explain-pr-btn')) {
+                    const btn = e.target.closest('.explain-pr-btn');
+                    const description = btn.dataset.description;
+                    if (description) {
+                        explainHomework(description);
                     }
                 }
             });
@@ -749,6 +785,50 @@
                     // Optionally show an error message to the user
                 }
             });
+
+            // LLM Functionality
+            closeLlmModalBtn.addEventListener('click', () => {
+                llmResponseModal.classList.add('hidden');
+                llmResponseText.textContent = ''; // Clear content when closing
+            });
+
+            async function explainHomework(description) {
+                llmResponseModal.classList.remove('hidden');
+                llmLoadingSpinner.classList.remove('hidden');
+                llmResponseText.textContent = ''; // Clear previous response
+
+                try {
+                    const prompt = `Jelaskan pekerjaan rumah berikut secara singkat dan berikan beberapa tips untuk mengerjakannya: "${description}"`;
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; // If you want to use models other than gemini-2.0-flash or imagen-3.0-generate-002, provide an API key here. Otherwise, leave this as-is.
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        llmResponseText.textContent = text;
+                    } else {
+                        llmResponseText.textContent = "Maaf, tidak dapat menghasilkan penjelasan untuk saat ini. Coba lagi nanti.";
+                        console.error("Unexpected LLM response structure:", result);
+                    }
+                } catch (error) {
+                    llmResponseText.textContent = "Terjadi kesalahan saat menghubungi AI. Pastikan koneksi internet Anda stabil.";
+                    console.error("Error calling Gemini API:", error);
+                } finally {
+                    llmLoadingSpinner.classList.add('hidden');
+                }
+            }
 
             // Initial render of schedules (PRs will be rendered via onSnapshot)
             renderSchedules();
