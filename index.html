@@ -118,17 +118,18 @@
     </div>
 
     <script>
-    // GANTI DENGAN KONFIGURASI DARI FIREBASE PROJECT-MU
-    const firebaseConfig = {
-        apiKey: "ISI_API_KEY_KAMU",
-        authDomain: "project-id.firebaseapp.com",
-        projectId: "project-id",
-        storageBucket: "project-id.appspot.com",
-        messagingSenderId: "xxxxxxxxx",
-        appId: "xxxxxxxxxxxxxxxxxxxxxxxx"
-    };
-
-    // Inisialisasi Firebase
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCU1cQlzZ6AJI7UAfMsjEmb2mTe15KG9cQ",
+  authDomain: "class-schedule-f7cea.firebaseapp.com",
+  databaseURL: "https://class-schedule-f7cea-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "class-schedule-f7cea",
+  storageBucket: "class-schedule-f7cea.firebasestorage.app",
+  messagingSenderId: "192764707551",
+  appId: "1:192764707551:web:051bb288069e895c4b1f6a",
+  measurementId: "G-RF6ZMC9L7F"
+};
+        // Inisialisasi Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
     const storage = firebase.storage();
