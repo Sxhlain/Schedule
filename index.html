@@ -108,7 +108,7 @@
             </div>
             <div id="pr-list" class="flex-grow overflow-y-auto space-y-4 pr-2 custom-scrollbar">
                 <!-- PR items will be injected here by JS -->
-                 <p id="no-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8 hidden">Belum ada PR. Selamat! 🎉</p>
+                 <p id="no-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8">Belum ada PR. Selamat! 🎉</p>
                  <div id="loading-pr" class="flex justify-center items-center py-4 hidden">
                     <div class="spinner"></div>
                     <span class="ml-2 text-gray-500 dark:text-gray-400">Memuat PR...</span>
@@ -126,6 +126,10 @@
                 <div class="mb-4">
                     <label for="pr-desc" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Deskripsi PR</label>
                     <input type="text" id="pr-desc" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700" required>
+                </div>
+                <div class="mb-4">
+                    <label for="pr-due-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Deadline PR (Opsional)</label>
+                    <input type="date" id="pr-due-date" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700">
                 </div>
                 <div class="mb-6">
                     <label for="pr-file" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload Foto atau Dokumen (Opsional)</label>
@@ -241,6 +245,7 @@
         let userId = null; // Will store the authenticated user ID
         let homeworks = []; // Local array to hold homework data
         let unsubscribeSnapshot = null; // To store the unsubscribe function for Firestore listener
+        let lastNotifiedScheduleItem = { dayIndex: -1, subjectIndex: -1 }; // To prevent duplicate class notifications
 
         document.addEventListener('DOMContentLoaded', async () => {
             const scheduleData = [
@@ -313,7 +318,8 @@
             const cancelPrBtn = document.getElementById('cancel-pr-btn');
             const savePrBtn = document.getElementById('save-pr-btn');
             const prDescInput = document.getElementById('pr-desc');
-            const prFileInput = document.getElementById('pr-file'); // Changed to prFileInput
+            const prDueDateInput = document.getElementById('pr-due-date'); // New: Due Date input
+            const prFileInput = document.getElementById('pr-file'); 
             const userIdDisplay = document.getElementById('user-id-display'); 
             const imageOverlay = document.getElementById('image-overlay');
             const overlayImage = document.getElementById('overlay-image');
@@ -341,6 +347,94 @@
             const llmModalTitle = document.getElementById('llm-modal-title');
 
             let isLoginMode = true; // true for login, false for register
+
+            // --- Notification Functions ---
+            async function requestNotificationPermission() {
+                if (!("Notification" in window)) {
+                    console.log("Browser ini tidak mendukung notifikasi desktop.");
+                    return false;
+                }
+                const permission = await Notification.requestPermission();
+                if (permission === "granted") {
+                    console.log("Izin notifikasi diberikan.");
+                    return true;
+                } else {
+                    console.warn("Izin notifikasi ditolak.");
+                    return false;
+                }
+            }
+
+            function showNotification(title, body, iconUrl = 'https://placehold.co/48x48/000000/FFFFFF?text=🔔') {
+                if (Notification.permission === "granted") {
+                    new Notification(title, { body: body, icon: iconUrl });
+                }
+            }
+
+            // --- Class Schedule Notification Logic ---
+            function checkClassScheduleForNotifications() {
+                const now = new Date();
+                const currentDay = now.getDay(); // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+
+                // Adjust currentDayIndex to match scheduleData (0 for Monday, 4 for Friday)
+                const todayScheduleIndex = currentDay === 0 || currentDay === 6 ? -1 : currentDay - 1;
+
+                if (todayScheduleIndex === -1) {
+                    // No classes on weekends
+                    return;
+                }
+
+                const todaySchedule = scheduleData[todayScheduleIndex];
+                if (!todaySchedule) return;
+
+                todaySchedule.subjects.forEach((subject, index) => {
+                    const [startHour, startMinute] = subject.time.split(' - ')[0].split(':').map(Number);
+                    
+                    // Create a Date object for the subject start time today
+                    const subjectStartTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute, 0);
+
+                    // Check if current time is exactly the start time of the class
+                    // And ensure we haven't notified for this specific class today already
+                    if (currentHour === startHour && currentMinute === startMinute && 
+                        (lastNotifiedScheduleItem.dayIndex !== todayScheduleIndex || lastNotifiedScheduleItem.subjectIndex !== index)) {
+                        
+                        showNotification(`⏰ Jam Pelajaran Baru!`, `Sekarang waktunya ${subject.name}!`);
+                        lastNotifiedScheduleItem = { dayIndex: todayScheduleIndex, subjectIndex: index };
+                        console.log(`Notifikasi: Jam pelajaran ${subject.name} dimulai.`);
+                    }
+                });
+            }
+
+            // --- Homework Deadline Notification Logic ---
+            function checkHomeworkDeadlines() {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+
+                homeworks.forEach(pr => {
+                    if (pr.dueDate) {
+                        const dueDate = new Date(pr.dueDate);
+                        dueDate.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+
+                        const diffTime = dueDate.getTime() - today.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                        const notificationKey = `notified_pr_${pr.id}_${pr.dueDate}`;
+
+                        // Notify if deadline is H-1 (tomorrow) and not already notified for this specific deadline
+                        if (diffDays === 1 && !localStorage.getItem(notificationKey)) {
+                            showNotification(`⚠️ Deadline PR Besok!`, `PR: "${pr.description}" deadlinenya besok!`);
+                            localStorage.setItem(notificationKey, 'true'); // Set flag to prevent re-notification
+                            console.log(`Notifikasi: Deadline PR "${pr.description}" besok.`);
+                        }
+                        // Optional: Clear notification flag if deadline has passed or is far in the future
+                        if (diffDays <= 0 || diffDays > 1) {
+                            localStorage.removeItem(notificationKey);
+                        }
+                    }
+                });
+            }
+
 
             // Function to handle file clicks (view image or download document)
             window.handleFileClick = (dataUrl, fileType, fileName) => {
@@ -423,6 +517,7 @@
                     } else {
                         noPrMessage.classList.add('hidden');
                     }
+                    checkHomeworkDeadlines(); // Check deadlines whenever homeworks are updated
                 }, (error) => {
                     console.error("Error fetching homeworks:", error);
                     loadingPrMessage.classList.add('hidden'); // Hide loading spinner on error
@@ -530,7 +625,6 @@
                     noPrMessage.classList.add('hidden');
                     homeworks.forEach(pr => {
                         const prItem = document.createElement('div');
-                        // Increased padding and added responsive flexbox for better layout on all devices
                         prItem.className = 'p-4 bg-gray-100 dark:bg-gray-700 rounded-lg flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3';
                         
                         let fileDisplayHtml = '';
@@ -551,11 +645,19 @@
                             }
                         }
 
+                        let dueDateDisplay = '';
+                        if (pr.dueDate) {
+                            const date = new Date(pr.dueDate);
+                            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                            dueDateDisplay = `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Deadline: ${date.toLocaleDateString('id-ID', options)}</p>`;
+                        }
+
                         prItem.innerHTML = `
                             ${fileDisplayHtml}
-                            <div class="flex-grow w-full"> <!-- Added w-full to ensure text takes available width -->
-                                <p class="font-medium text-base sm:text-lg mb-2">${pr.description}</p> <!-- Increased font size for readability -->
-                                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full">
+                            <div class="flex-grow w-full"> 
+                                <p class="font-medium text-base sm:text-lg">${pr.description}</p> 
+                                ${dueDateDisplay}
+                                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full mt-2">
                                     <button data-description="${pr.description}" class="explain-pr-btn px-3 py-1 bg-purple-500 text-white text-sm rounded-md hover:bg-purple-600 transition-transform transform hover:scale-105 w-full sm:w-auto">
                                         ✨ Jelaskan PR
                                     </button>
@@ -564,7 +666,7 @@
                                     </button>
                                 </div>
                             </div>
-                            <button data-id="${pr.id}" class="pr-done-btn flex-shrink-0 p-2 bg-green-500 text-white rounded-full hover:bg-green-600 self-end sm:self-center mt-2 sm:mt-0"> <!-- Adjusted button alignment for responsiveness -->
+                            <button data-id="${pr.id}" class="pr-done-btn flex-shrink-0 p-2 bg-green-500 text-white rounded-full hover:bg-green-600 self-end sm:self-center mt-2 sm:mt-0"> 
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
                             </button>
                         `;
@@ -576,12 +678,11 @@
             addPrBtn.addEventListener('click', () => {
                 if (!userId) {
                     console.warn("User not logged in. Cannot add PR.");
-                    // Show login prompt if not logged in
                     loginPromptMessage.classList.remove('hidden');
                     return;
                 }
                 prModal.classList.remove('hidden');
-                prForm.reset(); // Clear form on open
+                prForm.reset(); 
             });
 
             cancelPrBtn.addEventListener('click', () => {
@@ -596,16 +697,16 @@
                     return;
                 }
 
-                savePrBtn.disabled = true; // Disable button to prevent double submission
-                savePrBtn.innerHTML = '<div class="spinner"></div>'; // Show spinner
+                savePrBtn.disabled = true; 
+                savePrBtn.innerHTML = '<div class="spinner"></div>'; 
 
                 const description = prDescInput.value;
-                const uploadedFile = prFileInput.files[0]; // Changed to prFileInput
+                const dueDate = prDueDateInput.value; // Get due date
+                const uploadedFile = prFileInput.files[0]; 
                 let fileDataUrl = null;
                 let fileType = null;
                 let fileName = null;
 
-                // Handle file asynchronously
                 if (uploadedFile) {
                     fileType = uploadedFile.type;
                     fileName = uploadedFile.name;
@@ -618,38 +719,36 @@
                         });
                     } catch (error) {
                         console.error("Error reading file:", error);
-                        // Optionally show an error message to the user
                         savePrBtn.disabled = false;
                         savePrBtn.innerHTML = 'Simpan';
-                        return; // Stop execution if file reading fails
+                        return; 
                     }
                 }
 
-                // Now that fileDataUrl is ready (or null if no file), save to Firestore
                 try {
                     await addDoc(collection(db, `artifacts/${currentAppId}/users/${userId}/homeworks`), {
                         description: description,
-                        fileDataUrl: fileDataUrl, // Renamed from imageUrl
-                        fileType: fileType,       // New field
-                        fileName: fileName,       // New field
-                        timestamp: Date.now() // Add a timestamp for sorting
+                        dueDate: dueDate, // Save due date
+                        fileDataUrl: fileDataUrl, 
+                        fileType: fileType,       
+                        fileName: fileName,       
+                        timestamp: Date.now() 
                     });
                     console.log("PR added to Firestore successfully!");
                 } catch (error) {
                     console.error("Error adding PR to Firestore:", error);
-                    // Optionally show an error message to the user
                 }
 
                 prModal.classList.add('hidden');
                 prForm.reset();
-                savePrBtn.disabled = false; // Re-enable button
-                savePrBtn.innerHTML = 'Simpan'; // Reset button text
+                savePrBtn.disabled = false; 
+                savePrBtn.innerHTML = 'Simpan'; 
             });
 
             prList.addEventListener('click', async (e) => {
                 if (e.target.closest('.pr-done-btn')) {
                     const btn = e.target.closest('.pr-done-btn');
-                    const prId = btn.dataset.id; // This is the Firestore document ID
+                    const prId = btn.dataset.id; 
 
                     if (userId && prId) {
                         try {
@@ -657,7 +756,6 @@
                             console.log("PR deleted from Firestore successfully!");
                         } catch (error) {
                             console.error("Error deleting PR from Firestore:", error);
-                            // Optionally show an error message to the user
                         }
                     } else {
                         console.error("User ID or PR ID not available. Cannot delete PR from Firestore.");
@@ -666,14 +764,14 @@
                     const btn = e.target.closest('.explain-pr-btn');
                     const description = btn.dataset.description;
                     if (description) {
-                        llmModalTitle.textContent = "Bantuan PR ✨"; // Set modal title for explanation
+                        llmModalTitle.textContent = "Bantuan PR ✨"; 
                         explainHomework(description);
                     }
                 } else if (e.target.closest('.suggest-plan-btn')) {
                     const btn = e.target.closest('.suggest-plan-btn');
                     const description = btn.dataset.description;
                     if (description) {
-                        llmModalTitle.textContent = "Rencana Belajar ✨"; // Set modal title for study plan
+                        llmModalTitle.textContent = "Rencana Belajar ✨"; 
                         suggestStudyPlan(description);
                     }
                 }
@@ -684,7 +782,7 @@
                 authModal.classList.remove('hidden');
                 authErrorMessage.classList.add('hidden');
                 authForm.reset();
-                setAuthMode(true); // Default to login mode
+                setAuthMode(true); 
             });
 
             cancelAuthBtn.addEventListener('click', () => {
@@ -708,17 +806,16 @@
                     authSubmitBtn.textContent = 'Register';
                     toggleAuthModeBtn.textContent = 'Sudah punya akun? Login di sini.';
                 }
-                authErrorMessage.classList.add('hidden'); // Clear error message on mode switch
+                authErrorMessage.classList.add('hidden'); 
             }
 
             authForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                authErrorMessage.classList.add('hidden'); // Clear previous errors
+                authErrorMessage.classList.add('hidden'); 
 
                 const email = authEmailInput.value;
                 const password = authPasswordInput.value;
 
-                // Basic validation for email and password length
                 if (!email || !password) {
                     authErrorMessage.textContent = "Email dan password harus diisi.";
                     authErrorMessage.classList.remove('hidden');
@@ -730,12 +827,10 @@
                     return;
                 }
 
-                // Disable button and show spinner
                 authSubmitBtn.disabled = true;
                 authSubmitBtn.innerHTML = '<div class="spinner"></div>';
 
                 if (isLoginMode) {
-                    // Login
                     try {
                         await signInWithEmailAndPassword(auth, email, password);
                         authModal.classList.add('hidden');
@@ -748,14 +843,13 @@
                         } else if (error.code === 'auth/invalid-email') {
                             errorMessage = "Format email tidak valid.";
                         } else {
-                             errorMessage = `Error: ${error.message}`; // General error message
+                             errorMessage = `Error: ${error.message}`; 
                         }
                         authErrorMessage.textContent = errorMessage;
                         authErrorMessage.classList.remove('hidden');
                         console.error("Login error:", error.message);
                     }
                 } else {
-                    // Register
                     try {
                         await createUserWithEmailAndPassword(auth, email, password);
                         authModal.classList.add('hidden');
@@ -773,23 +867,22 @@
                             errorMessage = "Registrasi email/password tidak diaktifkan. Harap aktifkan di Firebase Console > Authentication > Sign-in method.";
                         }
                         else {
-                            errorMessage = `Error: ${error.message}`; // General error message
+                            errorMessage = `Error: ${error.message}`; 
                         }
                         authErrorMessage.textContent = errorMessage;
                         authErrorMessage.classList.remove('hidden');
                         console.error("Register error:", error.message);
                     }
                 }
-                // Re-enable button and reset text
                 authSubmitBtn.disabled = false;
                 authSubmitBtn.innerHTML = isLoginMode ? 'Login' : 'Register';
             });
 
             // Google Login
             googleLoginBtn.addEventListener('click', async () => {
-                authErrorMessage.classList.add('hidden'); // Clear previous errors
-                googleLoginBtn.disabled = true; // Disable button
-                googleLoginBtn.innerHTML = '<div class="spinner"></div><span class="ml-2">Memuat...</span>'; // Show spinner
+                authErrorMessage.classList.add('hidden'); 
+                googleLoginBtn.disabled = true; 
+                googleLoginBtn.innerHTML = '<div class="spinner"></div><span class="ml-2">Memuat...</span>'; 
 
                 try {
                     await signInWithPopup(auth, googleProvider);
@@ -811,14 +904,14 @@
                     authErrorMessage.classList.remove('hidden');
                     console.error("Google login error:", error.message);
                 } finally {
-                    googleLoginBtn.disabled = false; // Re-enable button
+                    googleLoginBtn.disabled = false; 
                     googleLoginBtn.innerHTML = `<svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12.0003 4.75C14.0263 4.75 15.8453 5.483 17.2023 6.757L20.0483 3.911C18.0673 2.097 15.2303 1 12.0003 1C7.79533 1 4.10933 3.447 2.36833 7.049L5.62633 9.516C6.44633 7.054 8.94833 4.75 12.0003 4.75Z" fill="#EA4335"/>
                         <path d="M23.0003 12.0003C23.0003 11.3463 22.9463 10.6933 22.8443 10.0533H12.0003V14.3913H18.3983C18.1183 15.6173 17.3473 16.6693 16.2043 17.3883L19.4623 19.8553C21.3193 18.1073 23.0003 15.0643 23.0003 12.0003Z" fill="#4285F4"/>
                         <path d="M5.62598 14.484C5.24498 13.339 5.03198 12.17 5.03198 11.0003C5.03198 9.83033 5.24498 8.66133 5.62598 7.51633L2.36898 5.04933C1.04198 7.73433 1.04198 10.2663 2.36898 12.9513L5.62598 14.484Z" fill="#FBBC05"/>
                         <path d="M12.0003 20.25C15.2303 20.25 18.0673 19.143 20.0483 17.329L17.2023 14.483C15.8453 15.757 14.0263 16.49 12.0003 16.49C8.94833 16.49 6.44633 14.186 5.62633 11.724L2.36833 14.191C4.10933 17.793 7.79533 20.25 12.0003 20.25Z" fill="#34A853"/>
                     </svg>
-                    Login dengan Google`; // Reset button text and icon
+                    Login dengan Google`; 
                 }
             });
 
@@ -826,30 +919,28 @@
                 try {
                     await signOut(auth);
                     console.log("User logged out.");
-                    // onAuthStateChanged listener will handle UI updates
                 } catch (error) {
                     console.error("Error logging out:", error);
-                    // Optionally show an error message to the user
                 }
             });
 
             // LLM Functionality
             closeLlmModalBtn.addEventListener('click', () => {
                 llmResponseModal.classList.add('hidden');
-                llmResponseText.textContent = ''; // Clear content when closing
+                llmResponseText.textContent = ''; 
             });
 
             async function explainHomework(description) {
                 llmResponseModal.classList.remove('hidden');
                 llmLoadingSpinner.classList.remove('hidden');
-                llmResponseText.textContent = ''; // Clear previous response
+                llmResponseText.textContent = ''; 
 
                 try {
                     const prompt = `Jelaskan pekerjaan rumah berikut secara singkat dan berikan beberapa tips untuk mengerjakannya: "${description}"`;
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    const apiKey = "AIzaSyBfVzaIGOp7pqRru-MT4M09ch01mVVlJW8"; 
+                    const apiKey = ""; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
                     const response = await fetch(apiUrl, {
@@ -880,14 +971,14 @@
             async function suggestStudyPlan(description) {
                 llmResponseModal.classList.remove('hidden');
                 llmLoadingSpinner.classList.remove('hidden');
-                llmResponseText.textContent = ''; // Clear previous response
+                llmResponseText.textContent = ''; 
 
                 try {
                     const prompt = `Buat rencana belajar singkat untuk pekerjaan rumah ini: "${description}". Sertakan langkah-langkah, perkiraan waktu, dan fokus utama.`;
                     let chatHistory = [];
                     chatHistory.push({ role: "user", parts: [{ text: prompt }] });
                     const payload = { contents: chatHistory };
-                    const apiKey = "AIzaSyBfVzaIGOp7pqRru-MT4M09ch01mVVlJW8"; 
+                    const apiKey = ""; 
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
                     
                     const response = await fetch(apiUrl, {
@@ -918,6 +1009,15 @@
             // Initial render of schedules (PRs will be rendered via onSnapshot)
             renderSchedules();
             showDay(currentDayIndex);
+
+            // Request notification permission on load
+            requestNotificationPermission();
+
+            // Set up interval for class schedule notifications (every minute)
+            setInterval(checkClassScheduleForNotifications, 60 * 1000); 
+
+            // Initial check for homework deadlines (will also run on data update)
+            checkHomeworkDeadlines();
         });
     </script>
 </body>
