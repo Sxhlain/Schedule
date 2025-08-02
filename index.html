@@ -1275,7 +1275,8 @@
                             button.addEventListener('click', async (e) => {
                                 e.stopPropagation(); // Prevent opening photo detail modal
                                 const photoIdToDelete = e.currentTarget.dataset.photoId;
-                                if (confirm("Apakah Anda yakin ingin menghapus foto ini?")) {
+                                // Using a custom modal/confirmation instead of alert()
+                                if (confirm("Apakah Anda yakin ingin menghapus foto ini?")) { // For simplicity, using confirm. In a real app, use a custom modal.
                                     await deletePhoto(photoIdToDelete);
                                 }
                             });
@@ -1934,7 +1935,9 @@
                         const photoIndex = photos.findIndex(p => p.id === currentViewedPhotoId);
 
                         if (photoIndex !== -1) {
-                            let updatedPhotos = JSON.parse(JSON.stringify(photos)); // Deep copy to ensure mutability
+                            // Create a deep copy of the photos array to ensure immutability is handled correctly
+                            // when updating nested objects in Firestore.
+                            let updatedPhotos = JSON.parse(JSON.stringify(photos)); 
                             let updatedLikes = updatedPhotos[photoIndex].likes || [];
                             if (updatedLikes.includes(userId)) {
                                 // Unlike
@@ -1975,7 +1978,8 @@
                         const photoIndex = photos.findIndex(p => p.id === currentViewedPhotoId);
 
                         if (photoIndex !== -1) {
-                            let updatedPhotos = JSON.parse(JSON.stringify(photos)); // Deep copy
+                            // Create a deep copy
+                            let updatedPhotos = JSON.parse(JSON.stringify(photos)); 
                             const newComment = {
                                 userId: userId,
                                 userName: currentUserProfile ? currentUserProfile.name || currentUserProfile.email.split('@')[0] : 'Anonim',
@@ -2014,32 +2018,22 @@
 
                 try {
                     const usersCollectionRef = collection(db, `artifacts/${currentAppId}/users`);
-                    // IMPORTANT: Firestore's direct query capabilities for partial text search are limited.
-                    // The following queries will only find exact matches for email or name.
-                    // For "starts with" or "contains" search, you'd typically need a dedicated search service (e.g., Algolia, ElasticSearch)
-                    // or to implement more complex indexing strategies in Firestore (e.g., storing n-grams).
+                    const querySnapshot = await getDocs(usersCollectionRef); // Fetch all user documents
 
-                    const qEmail = query(usersCollectionRef, where("profile.data.email", "==", searchTerm));
-                    const qName = query(usersCollectionRef, where("profile.data.name", "==", searchTerm));
+                    const foundUsers = [];
+                    querySnapshot.forEach(docSnap => {
+                        const profileData = docSnap.data().profile?.data; // Access nested profile data
+                        if (profileData && docSnap.id !== userId) { // Exclude current user and ensure profile data exists
+                            const userName = (profileData.name || '').toLowerCase();
+                            const userEmail = (profileData.email || '').toLowerCase();
 
-                    const [emailSnapshot, nameSnapshot] = await Promise.all([getDocs(qEmail), getDocs(qName)]);
-
-                    const foundUsers = new Map(); // Use Map to store unique users by UID
-
-                    emailSnapshot.forEach(docSnap => {
-                        const profileData = docSnap.data().profile.data;
-                        if (docSnap.id !== userId) { // Don't show current user in search results
-                             foundUsers.set(docSnap.id, { uid: docSnap.id, ...profileData });
-                        }
-                    });
-                    nameSnapshot.forEach(docSnap => {
-                        const profileData = docSnap.data().profile.data;
-                        if (docSnap.id !== userId) { // Don't show current user in search results
-                            foundUsers.set(docSnap.id, { uid: docSnap.id, ...profileData });
+                            if (userName.includes(searchTerm) || userEmail.includes(searchTerm)) {
+                                foundUsers.push({ uid: docSnap.id, ...profileData });
+                            }
                         }
                     });
 
-                    if (foundUsers.size === 0) {
+                    if (foundUsers.length === 0) {
                         noSearchResults.classList.remove('hidden');
                     } else {
                         foundUsers.forEach(user => {
