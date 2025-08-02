@@ -221,14 +221,27 @@
                 <section id="profile-section" class="content-section hidden">
                     <h3 class="text-3xl font-bold mb-6">Profil Saya</h3>
                     <div id="profile-content" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6">
-                        <div class="flex items-center space-x-4 mb-6">
-                            <img id="profile-avatar" class="w-24 h-24 rounded-full object-cover border-4 border-blue-500" src="https://placehold.co/96x96/cccccc/333333?text=Avatar" alt="Profile Avatar">
-                            <div>
-                                <h4 id="profile-name" class="text-2xl font-bold">Nama Pengguna</h4>
-                                <p id="profile-email" class="text-gray-600 dark:text-gray-400">email@example.com</p>
-                                <p id="profile-class" class="text-blue-600 dark:text-blue-400 font-semibold">Kelas: Belum Dipilih</p>
+                        <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-6">
+                            <div class="relative">
+                                <img id="profile-avatar" class="w-24 h-24 rounded-full object-cover border-4 border-blue-500 cursor-pointer" src="https://placehold.co/96x96/cccccc/333333?text=Avatar" alt="Profile Avatar">
+                                <button id="edit-avatar-btn" class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-2 text-xs shadow-md hover:bg-blue-600 transition-transform transform hover:scale-110">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                </button>
+                            </div>
+                            <div class="text-center md:text-left">
+                                <input type="text" id="profile-name-input" class="text-2xl font-bold bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:outline-none mb-1 w-full text-center md:text-left" placeholder="Nama Pengguna">
+                                <p id="profile-email" class="text-gray-600 dark:text-gray-400 text-sm">email@example.com</p>
+                                <p id="profile-class" class="text-blue-600 dark:text-blue-400 font-semibold text-sm">Kelas: Belum Dipilih</p>
                             </div>
                         </div>
+                        <div class="mb-6">
+                            <label for="profile-bio-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio Anda:</label>
+                            <textarea id="profile-bio-input" rows="3" class="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tulis sesuatu tentang diri Anda..."></textarea>
+                        </div>
+                        <button id="save-profile-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105 mb-6">
+                            Simpan Profil
+                        </button>
+
                         <div class="flex justify-around text-center mb-6">
                             <div>
                                 <p class="text-2xl font-bold" id="follower-count">0</p>
@@ -246,7 +259,7 @@
                             <p id="no-photos-message" class="text-gray-500 dark:text-gray-400 col-span-full text-center hidden">Belum ada foto yang diunggah.</p>
                         </div>
                         <button id="upload-profile-photo-btn" class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">
-                            Upload Foto Profil
+                            Upload Foto Baru
                         </button>
                         
                         <h4 class="text-xl font-bold mt-8 mb-4">PR Saya</h4>
@@ -333,6 +346,10 @@
                             </button>
                             <span class="text-gray-500">|</span>
                             <span class="text-gray-600 dark:text-gray-400" id="comment-count">0 Komentar</span>
+                        </div>
+                        <div id="liked-by-list" class="mb-4 text-sm text-gray-700 dark:text-gray-300 hidden">
+                            <p class="font-semibold mb-1">Disukai oleh:</p>
+                            <ul id="liked-by-ul" class="list-disc list-inside pl-2"></ul>
                         </div>
                         <div id="comments-list" class="space-y-3 mb-4 max-h-40 overflow-y-auto custom-scrollbar">
                             <!-- Comments will be injected here -->
@@ -445,6 +462,10 @@
         </div>
     </div>
 
+    <!-- Image Overlay for PR files -->
+    <div id="image-overlay" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <img id="overlay-image" src="" alt="Full size image" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-lg">
+    </div>
 
     <script type="module">
         // Firebase SDK imports
@@ -605,15 +626,15 @@
             }
         };
 
+        let currentDayIndex = new Date().getDay() - 1; // 0 for Monday, 4 for Friday
+        if (currentDayIndex < 0 || currentDayIndex > 4) {
+            currentDayIndex = 0; // Default to Monday if it's weekend or invalid day
+        }
+
         let currentScheduleData = allScheduleData['12-1 (A1)'].data; // Default schedule
         let currentClassName = '12-1 (A1)'; // Default class name
 
         document.addEventListener('DOMContentLoaded', async () => {
-            let currentDayIndex = new Date().getDay() - 1;
-            if (currentDayIndex < 0 || currentDayIndex > 4) {
-                currentDayIndex = 0; // Default to Monday
-            }
-
             const scheduleContainer = document.getElementById('schedule-container');
             const dayTitle = document.getElementById('current-day-title');
             const prevDayBtn = document.getElementById('prev-day');
@@ -678,7 +699,10 @@
 
             const profileSection = document.getElementById('profile-section'); // New section
             const profileAvatar = document.getElementById('profile-avatar');
-            const profileName = document.getElementById('profile-name');
+            const profileNameInput = document.getElementById('profile-name-input'); // New input for name
+            const profileBioInput = document.getElementById('profile-bio-input'); // New input for bio
+            const saveProfileBtn = document.getElementById('save-profile-btn'); // New save button
+            const editAvatarBtn = document.getElementById('edit-avatar-btn'); // New button for avatar upload
             const profileEmail = document.getElementById('profile-email');
             const profileClass = document.getElementById('profile-class');
             const followerCount = document.getElementById('follower-count');
@@ -719,6 +743,8 @@
             const noCommentsMessage = document.getElementById('no-comments-message');
             const commentForm = document.getElementById('comment-form');
             const commentInput = document.getElementById('comment-input');
+            const likedByList = document.getElementById('liked-by-list'); // New element to show who liked
+            const likedByUl = document.getElementById('liked-by-ul'); // UL for liked by users
 
             const classSelect = document.getElementById('class-select'); // For schedule section
             const currentClassDisplay = document.getElementById('current-class-display');
@@ -858,9 +884,6 @@
             };
 
             // Add null check before attaching event listener
-            // The imageOverlay and overlayImage variables are declared at the top of DOMContentLoaded
-            // const imageOverlay = document.getElementById('image-overlay');
-            // const overlayImage = document.getElementById('overlay-image');
             if (imageOverlay) {
                 imageOverlay.addEventListener('click', () => {
                     imageOverlay.classList.add('hidden');
@@ -927,6 +950,7 @@
                         currentUserProfile = {
                             email: auth.currentUser.email,
                             name: auth.currentUser.displayName || auth.currentUser.email.split('@')[0],
+                            bio: '', // New field
                             avatarUrl: 'https://placehold.co/96x96/cccccc/333333?text=Avatar',
                             className: null, // User will select this
                             photos: [],
@@ -945,7 +969,8 @@
             async function updateProfileUI() {
                 if (currentUserProfile) {
                     profileAvatar.src = currentUserProfile.avatarUrl || 'https://placehold.co/96x96/cccccc/333333?text=Avatar';
-                    profileName.textContent = currentUserProfile.name || 'Nama Pengguna';
+                    profileNameInput.value = currentUserProfile.name || ''; // Set value for input
+                    profileBioInput.value = currentUserProfile.bio || ''; // Set value for input
                     profileEmail.textContent = currentUserProfile.email || 'email@example.com';
                     profileClass.textContent = `Kelas: ${currentUserProfile.className || 'Belum Dipilih'}`;
                     followerCount.textContent = currentUserProfile.followers ? currentUserProfile.followers.length : 0;
@@ -993,6 +1018,7 @@
                     renderPRs();
                     loadingPrMessage.classList.add('hidden'); 
                     if (homeworks.length === 0) {
+                        prList.appendChild(noPrMessage); // Ensure message is in the list
                         noPrMessage.classList.remove('hidden');
                     } else {
                         noPrMessage.classList.add('hidden');
@@ -1030,6 +1056,7 @@
                     renderHistoryPRs();
                     loadingHistoryPr.classList.add('hidden');
                     if (completedHomeworks.length === 0) {
+                        historyPrList.appendChild(noHistoryPrMessage); // Ensure message is in the list
                         noHistoryPrMessage.classList.remove('hidden');
                     } else {
                         noHistoryPrMessage.classList.add('hidden');
@@ -1042,22 +1069,14 @@
 
             // --- Render Functions ---
             function renderSchedules() {
-                // Hide all schedule divs first
-                document.querySelectorAll('.day-schedule').forEach(div => {
-                    div.classList.add('hidden');
-                    div.classList.remove('absolute'); // Ensure absolute is removed after transition if it was added
-                });
-
-                // Create and append the current day's schedule div if it doesn't exist
-                let currentDayDiv = document.getElementById(`day-${currentDayIndex}`);
-                if (!currentDayDiv) {
-                    currentDayDiv = document.createElement('div');
-                    currentDayDiv.id = `day-${currentDayIndex}`;
-                    currentDayDiv.className = 'day-schedule w-full';
-                    scheduleContainer.appendChild(currentDayDiv);
-                }
+                // Remove all existing schedule divs before re-rendering
+                scheduleContainer.innerHTML = '';
 
                 const day = currentScheduleData[currentDayIndex];
+                const dayDiv = document.createElement('div');
+                dayDiv.id = `day-${currentDayIndex}`;
+                dayDiv.className = 'day-schedule w-full'; // No 'hidden' class initially
+
                 const subjectsHtml = day.subjects.map(subject => `
                     <div class="flex items-center p-3 rounded-lg mb-2 ${subject.color} ${subject.textColor} shadow-sm">
                         <span class="font-medium w-28">${subject.time}</span>
@@ -1065,9 +1084,8 @@
                     </div>
                 `).join('');
 
-                currentDayDiv.innerHTML = `<div class="space-y-2">${subjectsHtml}</div>`;
-                currentDayDiv.classList.remove('hidden'); // Ensure it's visible
-                currentDayDiv.classList.remove('absolute'); // Ensure it's not absolute after render
+                dayDiv.innerHTML = `<div class="space-y-2">${subjectsHtml}</div>`;
+                scheduleContainer.appendChild(dayDiv);
             }
 
             function updateDisplay() {
@@ -1229,17 +1247,58 @@
                     (isCurrentUser ? noPhotosMessage : noOtherPhotosMessage).classList.add('hidden');
                     photosArray.forEach(photo => {
                         const imgDiv = document.createElement('div');
-                        imgDiv.className = 'relative w-full aspect-square rounded-lg overflow-hidden shadow-md cursor-pointer';
+                        imgDiv.className = 'relative w-full aspect-square rounded-lg overflow-hidden shadow-md cursor-pointer group'; // Added group for hover effects
                         imgDiv.innerHTML = `
                             <img src="${photo.url}" alt="User Photo" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200">
+                            <div class="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                 <span class="text-white text-lg font-bold">${photo.likes.length} ❤️</span>
                             </div>
+                            ${isCurrentUser ? `
+                                <button data-photo-id="${photo.id}" class="delete-photo-btn absolute top-2 right-2 bg-red-500 text-white rounded-full p-1.5 text-xs shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-red-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                            ` : ''}
                         `;
                         // Pass isCurrentUser to showPhotoDetail to control like/comment button visibility
-                        imgDiv.addEventListener('click', () => showPhotoDetail(photo, isCurrentUser));
+                        imgDiv.addEventListener('click', (e) => {
+                            // Only open detail modal if not clicking delete button
+                            if (!e.target.closest('.delete-photo-btn')) {
+                                showPhotoDetail(photo, isCurrentUser);
+                            }
+                        });
                         container.appendChild(imgDiv);
                     });
+
+                    // Add event listeners for delete buttons after rendering
+                    if (isCurrentUser) {
+                        container.querySelectorAll('.delete-photo-btn').forEach(button => {
+                            button.addEventListener('click', async (e) => {
+                                e.stopPropagation(); // Prevent opening photo detail modal
+                                const photoIdToDelete = e.currentTarget.dataset.photoId;
+                                if (confirm("Apakah Anda yakin ingin menghapus foto ini?")) {
+                                    await deletePhoto(photoIdToDelete);
+                                }
+                            });
+                        });
+                    }
+                }
+            }
+
+            async function deletePhoto(photoId) {
+                if (!userId || !photoId) return;
+
+                const userProfileDocRef = doc(db, `artifacts/${currentAppId}/users/${userId}/profile/data`);
+                try {
+                    const docSnap = await getDoc(userProfileDocRef);
+                    if (docSnap.exists()) {
+                        const profileData = docSnap.data();
+                        const updatedPhotos = (profileData.photos || []).filter(photo => photo.id !== photoId);
+                        await updateDoc(userProfileDocRef, { photos: updatedPhotos });
+                        console.log(`Photo ${photoId} deleted successfully.`);
+                        await fetchUserProfile(userId); // Re-fetch to update UI
+                    }
+                } catch (error) {
+                    console.error("Error deleting photo:", error);
                 }
             }
 
@@ -1704,6 +1763,49 @@
                 }
             });
 
+            // --- Profile Editing (Name, Bio, Avatar) ---
+            saveProfileBtn.addEventListener('click', async () => {
+                if (!userId) return;
+                const newName = profileNameInput.value.trim();
+                const newBio = profileBioInput.value.trim();
+                
+                const updates = {};
+                if (newName !== currentUserProfile.name) {
+                    updates.name = newName;
+                }
+                if (newBio !== currentUserProfile.bio) {
+                    updates.bio = newBio;
+                }
+
+                if (Object.keys(updates).length > 0) {
+                    await updateRemoteUserProfile(updates);
+                }
+            });
+
+            editAvatarBtn.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (file && userId) {
+                        try {
+                            const reader = new FileReader();
+                            reader.onload = async (event) => {
+                                const avatarUrl = event.target.result;
+                                await updateRemoteUserProfile({ avatarUrl: avatarUrl });
+                                console.log("Avatar uploaded!");
+                            };
+                            reader.readAsDataURL(file);
+                        } catch (error) {
+                            console.error("Error uploading avatar:", error);
+                        }
+                    }
+                };
+                input.click();
+            });
+
+
             // --- Profile Photo Upload ---
             uploadProfilePhotoBtn.addEventListener('click', () => {
                 const input = document.createElement('input');
@@ -1722,7 +1824,8 @@
                                     url: photoUrl,
                                     timestamp: Date.now(),
                                     likes: [],
-                                    comments: []
+                                    comments: [],
+                                    userId: userId // Store the owner's userId
                                 };
                                 // Update user profile with new photo
                                 await updateDoc(doc(db, `artifacts/${currentAppId}/users/${userId}/profile/data`), {
@@ -1740,11 +1843,11 @@
             });
 
             // --- Photo Detail Modal (Likes & Comments) ---
-            function showPhotoDetail(photo, isCurrentUser) {
+            async function showPhotoDetail(photo, isCurrentUser) {
                 currentViewedPhotoId = photo.id;
-                currentViewedPhotoUserId = photo.userId || (isCurrentUser ? userId : null); // Ensure userId is set for owner
+                currentViewedPhotoUserId = photo.userId; // Use the userId stored in the photo object
                 detailPhotoImg.src = photo.url;
-                updateLikesAndCommentsUI(photo.likes, photo.comments);
+                await updateLikesAndCommentsUI(photo.likes, photo.comments);
                 
                 // Show/hide like button and comment form based on login status and ownership
                 if (userId) { // If logged in
@@ -1771,14 +1874,35 @@
                 photoDetailModal.classList.remove('hidden');
             }
 
-            function updateLikesAndCommentsUI(likes, comments) {
+            async function updateLikesAndCommentsUI(likes, comments) {
                 likeCount.textContent = likes.length;
                 commentCount.textContent = `${comments.length} Komentar`;
                 commentsList.innerHTML = '';
+                likedByUl.innerHTML = ''; // Clear previous liked by list
+
+                if (likes.length > 0) {
+                    likedByList.classList.remove('hidden');
+                    // Fetch user names for likes
+                    const userPromises = likes.map(uid => getDoc(doc(db, `artifacts/${currentAppId}/users/${uid}/profile/data`)));
+                    const userSnaps = await Promise.all(userPromises);
+                    userSnaps.forEach(snap => {
+                        if (snap.exists()) {
+                            const userData = snap.data();
+                            const listItem = document.createElement('li');
+                            listItem.textContent = userData.name || userData.email.split('@')[0];
+                            likedByUl.appendChild(listItem);
+                        }
+                    });
+                } else {
+                    likedByList.classList.add('hidden');
+                }
+
                 if (comments.length === 0) {
                     noCommentsMessage.classList.remove('hidden');
                 } else {
                     noCommentsMessage.classList.add('hidden');
+                    // Sort comments by timestamp descending (newest first)
+                    comments.sort((a, b) => b.timestamp - a.timestamp);
                     comments.forEach(comment => {
                         const commentDiv = document.createElement('div');
                         commentDiv.className = 'bg-gray-50 dark:bg-gray-700 p-2 rounded-md';
@@ -1802,29 +1926,39 @@
                 if (!userId || !currentViewedPhotoId || !currentViewedPhotoUserId) return;
 
                 const userProfileDocRef = doc(db, `artifacts/${currentAppId}/users/${currentViewedPhotoUserId}/profile/data`);
-                const docSnap = await getDoc(userProfileDocRef);
-                if (docSnap.exists()) {
-                    const profileData = docSnap.data();
-                    const photos = profileData.photos || [];
-                    const photoIndex = photos.findIndex(p => p.id === currentViewedPhotoId);
+                try {
+                    const docSnap = await getDoc(userProfileDocRef);
+                    if (docSnap.exists()) {
+                        const profileData = docSnap.data();
+                        const photos = profileData.photos || [];
+                        const photoIndex = photos.findIndex(p => p.id === currentViewedPhotoId);
 
-                    if (photoIndex !== -1) {
-                        let updatedPhotos = [...photos]; // Create a mutable copy
-                        let updatedLikes = [...updatedPhotos[photoIndex].likes];
-                        if (updatedLikes.includes(userId)) {
-                            // Unlike
-                            updatedLikes = updatedLikes.filter(id => id !== userId);
-                        } else {
-                            // Like
-                            updatedLikes.push(userId);
+                        if (photoIndex !== -1) {
+                            let updatedPhotos = JSON.parse(JSON.stringify(photos)); // Deep copy to ensure mutability
+                            let updatedLikes = updatedPhotos[photoIndex].likes || [];
+                            if (updatedLikes.includes(userId)) {
+                                // Unlike
+                                updatedLikes = updatedLikes.filter(id => id !== userId);
+                            } else {
+                                // Like
+                                updatedLikes.push(userId);
+                            }
+                            updatedPhotos[photoIndex].likes = updatedLikes; // Update the likes array in the copy
+
+                            // Update the entire photos array in Firestore
+                            await updateDoc(userProfileDocRef, { photos: updatedPhotos });
+                            await updateLikesAndCommentsUI(updatedPhotos[photoIndex].likes, updatedPhotos[photoIndex].comments); // Update UI
+                            // Re-render the profile photos to update the like count on the thumbnail
+                            if (currentViewedPhotoUserId === userId) {
+                                await fetchUserProfile(userId); // Re-fetch current user's profile
+                            } else {
+                                await showOtherUserProfile(currentViewedPhotoUserId); // Re-fetch other user's profile
+                            }
+                            console.log(`Photo ${currentViewedPhotoId} likes updated.`);
                         }
-                        updatedPhotos[photoIndex].likes = updatedLikes; // Update the likes array in the copy
-
-                        // Update the entire photos array in Firestore
-                        await updateDoc(userProfileDocRef, { photos: updatedPhotos });
-                        updateLikesAndCommentsUI(updatedLikes, updatedPhotos[photoIndex].comments); // Update UI
-                        console.log(`Photo ${currentViewedPhotoId} likes updated.`);
                     }
+                } catch (error) {
+                    console.error("Error updating likes:", error);
                 }
             });
 
@@ -1833,30 +1967,34 @@
                 if (!userId || !currentViewedPhotoId || !currentViewedPhotoUserId || !commentInput.value.trim()) return;
 
                 const userProfileDocRef = doc(db, `artifacts/${currentAppId}/users/${currentViewedPhotoUserId}/profile/data`);
-                const docSnap = await getDoc(userProfileDocRef);
-                if (docSnap.exists()) {
-                    const profileData = docSnap.data();
-                    const photos = profileData.photos || [];
-                    const photoIndex = photos.findIndex(p => p.id === currentViewedPhotoId);
+                try {
+                    const docSnap = await getDoc(userProfileDocRef);
+                    if (docSnap.exists()) {
+                        const profileData = docSnap.data();
+                        const photos = profileData.photos || [];
+                        const photoIndex = photos.findIndex(p => p.id === currentViewedPhotoId);
 
-                    if (photoIndex !== -1) {
-                        let updatedPhotos = [...photos]; // Create a mutable copy
-                        const newComment = {
-                            userId: userId,
-                            userName: currentUserProfile ? currentUserProfile.name || currentUserProfile.email.split('@')[0] : 'Anonim',
-                            text: commentInput.value.trim(),
-                            timestamp: Date.now()
-                        };
-                        // Ensure comments array exists
-                        updatedPhotos[photoIndex].comments = updatedPhotos[photoIndex].comments || [];
-                        updatedPhotos[photoIndex].comments.push(newComment); // Add new comment to the copy
+                        if (photoIndex !== -1) {
+                            let updatedPhotos = JSON.parse(JSON.stringify(photos)); // Deep copy
+                            const newComment = {
+                                userId: userId,
+                                userName: currentUserProfile ? currentUserProfile.name || currentUserProfile.email.split('@')[0] : 'Anonim',
+                                text: commentInput.value.trim(),
+                                timestamp: Date.now()
+                            };
+                            // Ensure comments array exists
+                            updatedPhotos[photoIndex].comments = updatedPhotos[photoIndex].comments || [];
+                            updatedPhotos[photoIndex].comments.push(newComment); // Add new comment to the copy
 
-                        // Update the entire photos array in Firestore
-                        await updateDoc(userProfileDocRef, { photos: updatedPhotos });
-                        updateLikesAndCommentsUI(updatedPhotos[photoIndex].likes, updatedPhotos[photoIndex].comments); // Update UI
-                        commentInput.value = ''; // Clear input
-                        console.log(`Comment added to photo ${currentViewedPhotoId}.`);
+                            // Update the entire photos array in Firestore
+                            await updateDoc(userProfileDocRef, { photos: updatedPhotos });
+                            await updateLikesAndCommentsUI(updatedPhotos[photoIndex].likes, updatedPhotos[photoIndex].comments); // Update UI
+                            commentInput.value = ''; // Clear input
+                            console.log(`Comment added to photo ${currentViewedPhotoId}.`);
+                        }
                     }
+                } catch (error) {
+                    console.error("Error adding comment:", error);
                 }
             });
 
@@ -1876,9 +2014,10 @@
 
                 try {
                     const usersCollectionRef = collection(db, `artifacts/${currentAppId}/users`);
-                    // Note: Firestore doesn't support full-text search directly.
-                    // This query will only work for exact matches on 'email' or 'name' starting with searchTerm.
-                    // For more advanced search, a dedicated search service (like Algolia, ElasticSearch) would be needed.
+                    // IMPORTANT: Firestore's direct query capabilities for partial text search are limited.
+                    // The following queries will only find exact matches for email or name.
+                    // For "starts with" or "contains" search, you'd typically need a dedicated search service (e.g., Algolia, ElasticSearch)
+                    // or to implement more complex indexing strategies in Firestore (e.g., storing n-grams).
 
                     const qEmail = query(usersCollectionRef, where("profile.data.email", "==", searchTerm));
                     const qName = query(usersCollectionRef, where("profile.data.name", "==", searchTerm));
@@ -2034,7 +2173,7 @@
             // Initial render of schedules and show default section
             populateClassSelects(); // Populate class selection dropdowns
             renderSchedules();
-            showDay(currentDayIndex);
+            updateDisplay(); // Call updateDisplay to set the initial day title and render schedule
             showSection('jadwal-section'); // Show Jadwal Pelajaran by default
 
             // Request notification permission on load
