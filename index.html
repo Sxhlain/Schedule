@@ -12,21 +12,197 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
         }
+        
+        /* Modern Glassmorphism Effect */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
         /* Custom scrollbar for better aesthetics */
         .custom-scrollbar::-webkit-scrollbar {
             width: 8px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #888;
+            background: linear-gradient(45deg, #667eea, #764ba2);
             border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #555;
+            background: linear-gradient(45deg, #764ba2, #667eea);
+        }
+        
+        /* Floating Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* Pulse Animation */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* Slide In Animation */
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Modern Button Hover Effects */
+        .modern-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .modern-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .modern-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .modern-btn:hover::before {
+            left: 100%;
+        }
+        
+        /* Card Hover Effects */
+        .hover-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Profile Grid Animation */
+        .profile-grid {
+            display: grid;
+            gap: 20px;
+            animation: fadeIn 0.8s ease;
+        }
+        
+        .profile-grid-item {
+            animation: slideInUp 0.6s ease;
+            animation-fill-mode: both;
+        }
+        
+        .profile-grid-item:nth-child(1) { animation-delay: 0.1s; }
+        .profile-grid-item:nth-child(2) { animation-delay: 0.2s; }
+        .profile-grid-item:nth-child(3) { animation-delay: 0.3s; }
+        .profile-grid-item:nth-child(4) { animation-delay: 0.4s; }
+        .profile-grid-item:nth-child(5) { animation-delay: 0.5s; }
+        .profile-grid-item:nth-child(6) { animation-delay: 0.6s; }
+        
+        /* Instagram-like Photo Grid */
+        .instagram-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 4px;
+            padding: 20px 0;
+        }
+        
+        .instagram-post {
+            position: relative;
+            aspect-ratio: 1;
+            overflow: hidden;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .instagram-post:hover {
+            transform: scale(1.05);
+            z-index: 2;
+        }
+        
+        .instagram-post img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .instagram-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .instagram-post:hover .instagram-overlay {
+            opacity: 1;
+        }
+        
+        /* Modern Modal Animation */
+        .modal-animate {
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
         /* Animation for day transition - simplified for stability */
         .day-schedule {
@@ -136,8 +312,8 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
 
     <!-- Mobile Header (Visible only on small screens) -->
-    <header class="md:hidden flex items-center justify-between p-4 bg-blue-600 dark:bg-blue-700 text-white shadow-md">
-        <button id="hamburger-menu" class="p-2 rounded-md hover:bg-blue-500">
+    <header class="md:hidden flex items-center justify-between p-4 glass-effect text-white shadow-md m-2 rounded-2xl">
+        <button id="hamburger-menu" class="p-2 rounded-md hover:bg-white hover:bg-opacity-20 transition-all duration-300">
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
@@ -152,7 +328,7 @@
         <div id="sidebar-overlay" class="sidebar-overlay"></div>
 
         <!-- Sidebar -->
-        <nav id="sidebar" class="fixed inset-y-0 left-0 w-64 bg-gray-800 dark:bg-gray-900 text-white p-4 z-40 md:relative md:translate-x-0 md:flex-shrink-0">
+        <nav id="sidebar" class="fixed inset-y-0 left-0 w-64 glass-effect text-white p-4 z-40 md:relative md:translate-x-0 md:flex-shrink-0 md:m-2 md:rounded-2xl">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold">Menu</h2>
                 <button id="close-sidebar" class="md:hidden p-2 rounded-md hover:bg-gray-700">
@@ -163,52 +339,52 @@
             </div>
             <ul class="space-y-2">
                 <li>
-                    <a href="#" id="nav-jadwal" class="flex items-center p-3 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" /></svg>
+                    <a href="#" id="nav-jadwal" class="flex items-center p-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
+                        <span class="text-2xl mr-3">📅</span>
                         Jadwal Pelajaran
                     </a>
                 </li>
                 <li>
-                    <a href="#" id="nav-pr" class="flex items-center p-3 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" /><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 .75.75 0 000 1.5c-.836 0-1.5.664-1.5 1.5h-.001a.75.75 0 00-1.5 0v.001A2 2 0 014 5zm-1 7a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zm1-4a1 1 0 000 2h6a1 1 0 100-2H4z" clip-rule="evenodd" /></svg>
+                    <a href="#" id="nav-pr" class="flex items-center p-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
+                        <span class="text-2xl mr-3">📝</span>
                         Daftar PR
                     </a>
                 </li>
                 <li>
-                    <a href="#" id="nav-history-pr" class="flex items-center p-3 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l3 3a1 1 0 001.414-1.414L11 9.586V6z" clip-rule="evenodd" /></svg>
+                    <a href="#" id="nav-history-pr" class="flex items-center p-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
+                        <span class="text-2xl mr-3">📚</span>
                         Riwayat PR
                     </a>
                 </li>
                 <li>
-                    <a href="#" id="nav-profile" class="flex items-center p-3 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+                    <a href="#" id="nav-profile" class="flex items-center p-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
+                        <span class="text-2xl mr-3">👤</span>
                         Profil Saya
                     </a>
                 </li>
                 <li>
-                    <a href="#" id="nav-find-users" class="flex items-center p-3 rounded-lg hover:bg-blue-600 dark:hover:bg-blue-700 transition duration-200">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 20 20" fill="currentColor"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17.555 17.445a1 1 0 01-1.414 1.414l-2.5-2.5a1 1 0 010-1.414l2.5-2.5a1 1 0 011.414 1.414L16.414 15l1.141 1.141z" /><path fill-rule="evenodd" d="M10 12a4 4 0 100-8 4 4 0 000 8zm-7 8a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+                    <a href="#" id="nav-find-users" class="flex items-center p-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
+                        <span class="text-2xl mr-3">🔍</span>
                         Cari Pengguna
                     </a>
                 </li>
             </ul>
             <div class="absolute bottom-4 left-4 right-4">
-                <div class="flex items-center justify-between text-sm text-gray-300 mb-2">
+                <div class="flex items-center justify-between text-sm text-white text-opacity-80 mb-2">
                     <p id="user-id-display" class="truncate">Belum login</p>
-                    <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded-lg text-sm hidden transition-transform transform hover:scale-105">Logout</button>
+                    <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded-xl text-sm hidden transition-all transform hover:scale-105 hover:shadow-lg">🚪 Logout</button>
                 </div>
-                <button id="auth-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">Login / Register</button>
+                <button id="auth-btn" class="w-full modern-btn text-white font-bold py-3 px-4 rounded-xl">🔐 Login / Register</button>
             </div>
         </nav>
 
         <!-- Main Content Area -->
         <main class="flex-grow p-4 md:p-8 overflow-y-auto">
-            <div class="w-full max-w-4xl mx-auto">
+            <div class="w-full max-w-4xl mx-auto glass-effect rounded-2xl p-6 md:p-8 backdrop-blur-xl">
 
                 <!-- Jadwal Pelajaran Section -->
                 <section id="jadwal-section" class="content-section">
-                    <h1 class="text-3xl font-bold text-center mb-4 md:mb-6">Jadwal Pelajaran</h1>
+                    <h1 class="text-3xl font-bold text-center mb-4 md:mb-6 text-white">📅 Jadwal Pelajaran</h1>
                     <div class="flex justify-center items-center mb-4">
                         <label for="class-select" class="mr-2 text-gray-700 dark:text-gray-300">Pilih Kelas:</label>
                         <select id="class-select" class="px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200">
@@ -233,8 +409,11 @@
                 <!-- Daftar PR Section -->
                 <section id="pr-section" class="content-section hidden">
                     <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-3xl font-bold">Daftar PR</h3>
-                        <button id="add-pr-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105 hidden">
+                        <h3 class="text-3xl font-bold text-white">📝 Daftar PR</h3>
+                        <button id="add-pr-btn" class="modern-btn text-white font-bold py-2 px-6 rounded-xl hidden flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
                             Tambah PR
                         </button>
                     </div>
@@ -250,7 +429,7 @@
 
                 <!-- Riwayat PR Section -->
                 <section id="history-pr-section" class="content-section hidden">
-                    <h3 class="text-3xl font-bold mb-6">Riwayat PR Selesai</h3>
+                    <h3 class="text-3xl font-bold mb-6 text-white">📚 Riwayat PR Selesai</h3>
                     <div id="history-pr-list" class="space-y-4 pr-2 custom-scrollbar">
                         <p id="no-history-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8 hidden">Belum ada PR yang diselesaikan.</p>
                         <div id="loading-history-pr" class="flex justify-center items-center py-4 hidden">
@@ -262,59 +441,91 @@
 
                 <!-- Profil Saya Section -->
                 <section id="profile-section" class="content-section hidden">
-                    <h3 class="text-3xl font-bold mb-6">Profil Saya</h3>
-                    <div id="profile-content" class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6">
-                        <div class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-6">
-                            <div class="relative">
-                                <img id="profile-avatar" class="w-24 h-24 rounded-full object-cover border-4 border-blue-500 cursor-pointer" src="https://placehold.co/96x96/cccccc/333333?text=Avatar" alt="Profile Avatar">
-                                <button id="edit-avatar-btn" class="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-2 text-xs shadow-md hover:bg-blue-600 transition-transform transform hover:scale-110">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    <div class="profile-grid">
+                        <!-- Profile Header -->
+                        <div class="profile-grid-item glass-effect rounded-2xl p-6 text-white">
+                            <div class="flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-6">
+                                <div class="relative group">
+                                    <img id="profile-avatar" class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-xl cursor-pointer transition-transform hover:scale-105" src="https://placehold.co/128x128/cccccc/333333?text=Avatar" alt="Profile Avatar">
+                                    <button id="edit-avatar-btn" class="absolute bottom-2 right-2 bg-white text-gray-800 rounded-full p-3 shadow-lg hover:bg-gray-100 transition-all transform hover:scale-110 opacity-0 group-hover:opacity-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                    </button>
+                                </div>
+                                <div class="flex-1 text-center md:text-left">
+                                    <input type="text" id="profile-name-input" class="text-3xl font-bold bg-transparent border-b-2 border-white border-opacity-30 focus:border-opacity-100 focus:outline-none mb-2 w-full text-center md:text-left placeholder-white placeholder-opacity-70" placeholder="Nama Pengguna">
+                                    <p id="profile-email" class="text-white text-opacity-80 mb-2">email@example.com</p>
+                                    <p id="profile-class" class="text-white font-semibold">Kelas: Belum Dipilih</p>
+                                    
+                                    <!-- Stats -->
+                                    <div class="flex justify-center md:justify-start space-x-8 mt-4">
+                                        <div class="text-center">
+                                            <p class="text-2xl font-bold" id="post-count">0</p>
+                                            <p class="text-white text-opacity-80 text-sm">Posts</p>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="text-2xl font-bold" id="follower-count">0</p>
+                                            <p class="text-white text-opacity-80 text-sm">Followers</p>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="text-2xl font-bold" id="following-count">0</p>
+                                            <p class="text-white text-opacity-80 text-sm">Following</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bio Section -->
+                        <div class="profile-grid-item glass-effect rounded-2xl p-6 text-white">
+                            <label for="profile-bio-input" class="block text-lg font-semibold mb-3">Bio</label>
+                            <textarea id="profile-bio-input" rows="3" class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-xl text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 resize-none" placeholder="Ceritakan tentang diri Anda..."></textarea>
+                            <button id="save-profile-btn" class="mt-4 w-full modern-btn text-white font-bold py-3 px-6 rounded-xl">
+                                💾 Simpan Profil
+                            </button>
+                        </div>
+
+                        <!-- Posts Section -->
+                        <div class="profile-grid-item glass-effect rounded-2xl p-6 text-white col-span-full">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-2xl font-bold">📸 Postingan Saya</h3>
+                                <button id="upload-profile-photo-btn" class="modern-btn text-white font-bold py-2 px-6 rounded-xl flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Upload Foto
                                 </button>
                             </div>
-                            <div class="text-center md:text-left">
-                                <input type="text" id="profile-name-input" class="text-2xl font-bold bg-transparent border-b border-gray-300 dark:border-gray-600 focus:border-blue-500 focus:outline-none mb-1 w-full text-center md:text-left" placeholder="Nama Pengguna">
-                                <p id="profile-email" class="text-gray-600 dark:text-gray-400 text-sm">email@example.com</p>
-                                <p id="profile-class" class="text-blue-600 dark:text-blue-400 font-semibold text-sm">Kelas: Belum Dipilih</p>
+                            
+                            <div id="profile-photos" class="instagram-grid">
+                                <!-- Photos will be injected here -->
                             </div>
-                        </div>
-                        <div class="mb-6">
-                            <label for="profile-bio-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio Anda:</label>
-                            <textarea id="profile-bio-input" rows="3" class="w-full px-3 py-2 border rounded-md bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tulis sesuatu tentang diri Anda..."></textarea>
-                        </div>
-                        <button id="save-profile-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105 mb-6">
-                            Simpan Profil
-                        </button>
-
-                        <div class="flex justify-around text-center mb-6">
-                            <div>
-                                <p class="text-2xl font-bold" id="follower-count">0</p>
-                                <p class="text-gray-600 dark:text-gray-400">Follower</p>
-                            </div>
-                            <div>
-                                <p class="text-2xl font-bold" id="following-count">0</p>
-                                <p class="text-gray-600 dark:text-gray-400">Following</p>
-                            </div>
+                            <p id="no-photos-message" class="text-white text-opacity-70 text-center py-12 hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Belum ada foto yang diunggah.<br>
+                                <span class="text-sm">Bagikan momen terbaik Anda!</span>
+                            </p>
                         </div>
 
-                        <h4 class="text-xl font-bold mb-4">Postingan Foto</h4>
-                        <div id="profile-photos" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                            <!-- Photos will be injected here -->
-                            <p id="no-photos-message" class="text-gray-500 dark:text-gray-400 col-span-full text-center hidden">Belum ada foto yang diunggah.</p>
-                        </div>
-                        <button id="upload-profile-photo-btn" class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105">
-                            Upload Foto Baru
-                        </button>
-                        
-                        <h4 class="text-xl font-bold mt-8 mb-4">PR Saya</h4>
-                        <div id="profile-pr-list" class="space-y-3 custom-scrollbar max-h-60 overflow-y-auto">
-                            <p id="no-profile-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8 hidden">Belum ada PR yang aktif.</p>
+                        <!-- Active Homework Section -->
+                        <div class="profile-grid-item glass-effect rounded-2xl p-6 text-white col-span-full">
+                            <h3 class="text-2xl font-bold mb-6">📝 PR Aktif Saya</h3>
+                            <div id="profile-pr-list" class="space-y-4 custom-scrollbar max-h-60 overflow-y-auto">
+                                <p id="no-profile-pr-message" class="text-white text-opacity-70 text-center py-8 hidden">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Semua PR sudah selesai! 🎉
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </section>
 
                 <!-- Cari Pengguna Section -->
                 <section id="find-users-section" class="content-section hidden">
-                    <h3 class="text-3xl font-bold mb-6">Cari Pengguna</h3>
+                    <h3 class="text-3xl font-bold mb-6 text-white">🔍 Cari Pengguna</h3>
                     <div class="mb-4">
                         <input type="text" id="user-search-input" placeholder="Cari berdasarkan email atau nama..." class="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                     </div>
@@ -512,17 +723,32 @@
 
     <!-- New Modal for Photo Upload with Preview and Loading -->
     <div id="photo-upload-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
-            <h2 class="text-xl font-bold mb-4">Unggah Foto Profil</h2>
-            <div class="flex flex-col items-center mb-4">
-                <img id="photo-upload-preview" class="w-32 h-32 object-cover rounded-lg border-2 border-gray-300 dark:border-gray-600 mb-4 hidden" src="" alt="Pratinjau Foto">
-                <input type="file" id="photo-upload-input" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-gray-300 dark:hover:file:bg-gray-600">
+        <div class="glass-effect rounded-2xl shadow-xl p-6 w-full max-w-md modal-animate">
+            <h2 class="text-2xl font-bold mb-6 text-white text-center">📸 Upload Foto Baru</h2>
+            <div class="flex flex-col items-center mb-6">
+                <div class="relative mb-4">
+                    <img id="photo-upload-preview" class="w-40 h-40 object-cover rounded-2xl border-4 border-white border-opacity-50 shadow-lg hidden" src="" alt="Pratinjau Foto">
+                    <div id="upload-placeholder" class="w-40 h-40 border-4 border-dashed border-white border-opacity-50 rounded-2xl flex items-center justify-center">
+                        <div class="text-center text-white text-opacity-70">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p class="text-sm">Pilih Foto</p>
+                        </div>
+                    </div>
+                </div>
+                <input type="file" id="photo-upload-input" accept="image/*" class="hidden">
+                <button type="button" id="choose-file-btn" class="modern-btn text-white font-semibold py-2 px-6 rounded-xl">
+                    Pilih File
+                </button>
             </div>
-            <p id="photo-upload-error" class="text-red-500 text-sm mb-4 hidden"></p>
-            <div class="flex justify-end space-x-3">
-                <button type="button" id="cancel-photo-upload-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Batal</button>
-                <button type="button" id="confirm-photo-upload-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center justify-center">
-                    <span id="photo-upload-btn-text">Unggah</span>
+            <p id="photo-upload-error" class="text-red-300 text-sm mb-4 hidden text-center"></p>
+            <div class="flex space-x-3">
+                <button type="button" id="cancel-photo-upload-btn" class="flex-1 bg-white bg-opacity-20 text-white font-semibold py-3 px-6 rounded-xl hover:bg-opacity-30 transition-all">
+                    Batal
+                </button>
+                <button type="button" id="confirm-photo-upload-btn" class="flex-1 modern-btn text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center">
+                    <span id="photo-upload-btn-text">Upload</span>
                     <div id="photo-upload-spinner" class="spinner ml-2 hidden"></div>
                 </button>
             </div>
@@ -534,8 +760,7 @@
         // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, where, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-storage.js"; // Import Firebase Storage
+        import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // Initialize Firebase
         const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
@@ -565,7 +790,6 @@
         const app = initializeApp(effectiveFirebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        const storage = getStorage(app); // Initialize Firebase Storage
         const googleProvider = new GoogleAuthProvider(); // Initialize Google Auth Provider
 
         let userId = null; // Will store the authenticated user ID
@@ -860,26 +1084,92 @@
                 updateScheduleDisplay(e.target.value);
             });
 
-            // --- Notification Functions ---
+            // --- Enhanced Notification System ---
+            let notificationPermission = false;
+
             async function requestNotificationPermission() {
                 if (!("Notification" in window)) {
                     console.log("Browser ini tidak mendukung notifikasi desktop.");
+                    showToast("⚠️ Browser tidak mendukung notifikasi", "warning");
                     return false;
                 }
-                const permission = await Notification.requestPermission();
-                if (permission === "granted") {
-                    console.log("Izin notifikasi diberikan.");
-                    return true;
-                } else {
-                    console.warn("Izin notifikasi ditolak.");
+                
+                try {
+                    const permission = await Notification.requestPermission();
+                    if (permission === "granted") {
+                        console.log("Izin notifikasi diberikan.");
+                        notificationPermission = true;
+                        showToast("🔔 Notifikasi diaktifkan!", "success");
+                        return true;
+                    } else {
+                        console.warn("Izin notifikasi ditolak.");
+                        showToast("🔕 Notifikasi diblokir", "warning");
+                        return false;
+                    }
+                } catch (error) {
+                    console.error("Error requesting notification permission:", error);
                     return false;
                 }
             }
 
-            function showNotification(title, body, iconUrl = 'https://placehold.co/48x48/000000/FFFFFF?text=🔔') {
+            function showNotification(title, body, iconUrl = 'https://placehold.co/48x48/667eea/FFFFFF?text=🔔') {
                 if (Notification.permission === "granted") {
-                    new Notification(title, { body: body, icon: iconUrl });
+                    const notification = new Notification(title, { 
+                        body: body, 
+                        icon: iconUrl,
+                        badge: iconUrl,
+                        vibrate: [200, 100, 200],
+                        requireInteraction: false,
+                        tag: 'app-notification'
+                    });
+                    
+                    // Auto close after 5 seconds
+                    setTimeout(() => {
+                        notification.close();
+                    }, 5000);
+                } else {
+                    // Fallback to in-app toast notification
+                    showToast(`${title}: ${body}`, "info");
                 }
+            }
+
+            // Toast notification system for in-app notifications
+            function showToast(message, type = "info") {
+                const toast = document.createElement('div');
+                toast.className = `fixed top-4 right-4 z-[9999] px-6 py-3 rounded-xl shadow-lg text-white font-semibold transform translate-x-full transition-transform duration-300 max-w-sm`;
+                
+                // Set color based on type
+                switch(type) {
+                    case 'success':
+                        toast.classList.add('bg-green-500');
+                        break;
+                    case 'warning':
+                        toast.classList.add('bg-yellow-500');
+                        break;
+                    case 'error':
+                        toast.classList.add('bg-red-500');
+                        break;
+                    default:
+                        toast.classList.add('bg-blue-500');
+                }
+                
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                
+                // Animate in
+                setTimeout(() => {
+                    toast.classList.remove('translate-x-full');
+                }, 100);
+                
+                // Animate out and remove
+                setTimeout(() => {
+                    toast.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            toast.parentNode.removeChild(toast);
+                        }
+                    }, 300);
+                }, 4000);
             }
 
             // --- Class Schedule Notification Logic ---
@@ -1013,28 +1303,44 @@
                 }
             });
 
-            // --- Firebase Storage Helper ---
-            async function uploadFileToFirebaseStorage(file, path) {
-                if (!file) return null;
-                const storageRef = ref(storage, path);
-                const snapshot = await uploadBytes(storageRef, file);
-                const downloadURL = await getDownloadURL(snapshot.ref);
-                return downloadURL;
+            // --- Image Processing Helpers ---
+            function convertFileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    if (!file) {
+                        resolve(null);
+                        return;
+                    }
+                    
+                    // Check file size (limit to 2MB for better performance)
+                    if (file.size > 2 * 1024 * 1024) {
+                        reject(new Error('File size too large. Please choose an image smaller than 2MB.'));
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
             }
 
-            async function deleteFileFromFirebaseStorage(fileUrl) {
-                if (!fileUrl || !fileUrl.startsWith('gs://') && !fileUrl.startsWith('https://firebasestorage.googleapis.com/')) {
-                    console.warn("Invalid file URL for deletion:", fileUrl);
-                    return;
-                }
-                try {
-                    const fileRef = ref(storage, fileUrl);
-                    await deleteObject(fileRef);
-                    console.log("File deleted from Storage:", fileUrl);
-                } catch (error) {
-                    console.error("Error deleting file from Storage:", error);
-                    // Handle cases where file might not exist or permission denied
-                }
+            function compressImage(file, maxWidth = 800, quality = 0.8) {
+                return new Promise((resolve) => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    
+                    img.onload = () => {
+                        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+                        canvas.width = img.width * ratio;
+                        canvas.height = img.height * ratio;
+                        
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        canvas.toBlob(resolve, 'image/jpeg', quality);
+                    };
+                    
+                    img.src = URL.createObjectURL(file);
+                });
             }
 
 
@@ -1362,58 +1668,84 @@
 
             function renderProfilePhotos(container, photosArray, isCurrentUser) {
                 container.innerHTML = '';
+                
                 if (!photosArray || photosArray.length === 0) {
-                    container.appendChild(isCurrentUser ? noPhotosMessage : noOtherPhotosMessage);
                     (isCurrentUser ? noPhotosMessage : noOtherPhotosMessage).classList.remove('hidden');
                 } else {
                     (isCurrentUser ? noPhotosMessage : noOtherPhotosMessage).classList.add('hidden');
-                    photosArray.forEach(photo => {
-                        const imgDiv = document.createElement('div');
-                        imgDiv.className = 'relative w-full aspect-square rounded-lg overflow-hidden shadow-md cursor-pointer group'; 
-                        imgDiv.innerHTML = `
-                            <img src="${photo.url}" alt="User Photo" class="w-full h-full object-cover">
-                            <div class="absolute inset-0 bg-black bg-opacity-25 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                <span class="text-white text-lg font-bold">${photo.likes.length} ❤️</span>
+                    
+                    // Update post count
+                    if (isCurrentUser) {
+                        const postCountElement = document.getElementById('post-count');
+                        if (postCountElement) {
+                            postCountElement.textContent = photosArray.length;
+                        }
+                    }
+                    
+                    photosArray.forEach((photo, index) => {
+                        const postDiv = document.createElement('div');
+                        postDiv.className = 'instagram-post profile-grid-item';
+                        postDiv.style.animationDelay = `${index * 0.1}s`;
+                        
+                        postDiv.innerHTML = `
+                            <img src="${photo.url}" alt="User Photo" loading="lazy">
+                            <div class="instagram-overlay">
+                                <div class="flex items-center space-x-4">
+                                    <span class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="white" viewBox="0 0 24 24">
+                                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                        </svg>
+                                        ${photo.likes ? photo.likes.length : 0}
+                                    </span>
+                                    <span class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                        ${photo.comments ? photo.comments.length : 0}
+                                    </span>
+                                </div>
                             </div>
                             ${isCurrentUser ? `
-                                <div class="kebab-menu relative">
-                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"></path></svg>
-                                    <div class="kebab-menu-dropdown hidden">
-                                        <button data-photo-id="${photo.id}" data-photo-url="${photo.url}" class="delete-photo-btn">Hapus Postingan</button>
-                                    </div>
+                                <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button data-photo-id="${photo.id}" data-photo-url="${photo.url}" class="delete-photo-btn bg-red-500 hover:bg-red-600 text-white rounded-full p-2 shadow-lg transition-all transform hover:scale-110">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </button>
                                 </div>
                             ` : ''}
                         `;
+
                         // Event listener for the entire photo div to open detail modal
-                        imgDiv.addEventListener('click', (e) => {
-                            // Prevent opening detail modal if clicking on the kebab menu or its dropdown
-                            if (!e.target.closest('.kebab-menu')) {
+                        postDiv.addEventListener('click', (e) => {
+                            // Prevent opening detail modal if clicking on the delete button
+                            if (!e.target.closest('.delete-photo-btn')) {
                                 showPhotoDetail(photo, isCurrentUser);
                             }
                         });
 
-                        // Event listener for the kebab menu button to toggle dropdown
+                        // Event listener for delete button
                         if (isCurrentUser) {
-                            const kebabMenu = imgDiv.querySelector('.kebab-menu');
-                            const dropdown = imgDiv.querySelector('.kebab-menu-dropdown');
-                            kebabMenu.addEventListener('click', (e) => {
-                                e.stopPropagation(); 
-                                dropdown.classList.toggle('hidden');
-                            });
-
-                            // Event listener for delete button inside dropdown
-                            const deleteButton = imgDiv.querySelector('.delete-photo-btn');
-                            deleteButton.addEventListener('click', async (e) => {
-                                e.stopPropagation(); 
-                                dropdown.classList.add('hidden'); 
-                                const photoIdToDelete = e.currentTarget.dataset.photoId;
-                                const photoUrlToDelete = e.currentTarget.dataset.photoUrl;
-                                if (confirm("Apakah Anda yakin ingin menghapus foto ini?")) {
-                                    await deletePhoto(photoIdToDelete, photoUrlToDelete);
-                                }
-                            });
+                            const deleteButton = postDiv.querySelector('.delete-photo-btn');
+                            if (deleteButton) {
+                                deleteButton.addEventListener('click', async (e) => {
+                                    e.stopPropagation();
+                                    const photoIdToDelete = e.currentTarget.dataset.photoId;
+                                    const photoUrlToDelete = e.currentTarget.dataset.photoUrl;
+                                    
+                                    // Modern confirmation dialog
+                                    if (confirm("🗑️ Hapus postingan ini?\n\nTindakan ini tidak dapat dibatalkan.")) {
+                                        // Add loading state
+                                        deleteButton.innerHTML = '<div class="spinner w-4 h-4"></div>';
+                                        deleteButton.disabled = true;
+                                        
+                                        await deletePhoto(photoIdToDelete, photoUrlToDelete);
+                                    }
+                                });
+                            }
                         }
-                        container.appendChild(imgDiv);
+                        
+                        container.appendChild(postDiv);
                     });
                 }
             }
@@ -1432,8 +1764,8 @@
                         await updateDoc(userProfileDocRef, { photos: updatedPhotos });
                         console.log(`Photo ${photoId} deleted from Firestore.`);
 
-                        // Delete from Firebase Storage
-                        await deleteFileFromFirebaseStorage(photoUrl);
+                        // Photo stored as Base64, no external storage to clean up
+                        console.log(`Photo ${photoId} deleted from profile.`);
 
                         await fetchUserProfile(userId); // Re-fetch to update UI
                     }
@@ -1509,14 +1841,20 @@
                     fileType = uploadedFile.type;
                     fileName = uploadedFile.name;
                     try {
-                        const filePath = `artifacts/${currentAppId}/users/${userId}/homework_files/${Date.now()}_${fileName}`;
-                        fileUrl = await uploadFileToFirebaseStorage(uploadedFile, filePath);
-                        console.log("File uploaded to Storage:", fileUrl);
+                        if (uploadedFile.type.startsWith('image/')) {
+                            // Compress and convert image to Base64
+                            const compressedFile = await compressImage(uploadedFile);
+                            fileUrl = await convertFileToBase64(compressedFile);
+                        } else {
+                            // For non-image files, convert directly to Base64
+                            fileUrl = await convertFileToBase64(uploadedFile);
+                        }
+                        console.log("File converted to Base64");
                     } catch (error) {
-                        console.error("Error uploading PR file:", error);
+                        console.error("Error processing file:", error);
                         savePrBtn.disabled = false;
                         savePrBtn.innerHTML = 'Simpan';
-                        // Add a user-facing error message here if needed
+                        alert('Error processing file: ' + error.message);
                         return; 
                     }
                 }
@@ -1925,13 +2263,14 @@
                     const file = e.target.files[0];
                     if (file && userId) {
                         try {
-                            const filePath = `artifacts/${currentAppId}/users/${userId}/avatars/${userId}_avatar_${Date.now()}`;
-                            const avatarUrl = await uploadFileToFirebaseStorage(file, filePath);
+                            // Compress and convert avatar to Base64
+                            const compressedFile = await compressImage(file, 200); // Smaller size for avatar
+                            const avatarUrl = await convertFileToBase64(compressedFile);
                             await updateRemoteUserProfile({ avatarUrl: avatarUrl });
                             console.log("Avatar uploaded!");
                         } catch (error) {
                             console.error("Error uploading avatar:", error);
-                            // Add user-facing error message here
+                            alert('Error uploading avatar: ' + error.message);
                         }
                     }
                 };
@@ -1943,12 +2282,18 @@
             uploadProfilePhotoBtn.addEventListener('click', () => {
                 photoUploadModal.classList.remove('hidden');
                 photoUploadPreview.classList.add('hidden');
+                document.getElementById('upload-placeholder').classList.remove('hidden');
                 photoUploadPreview.src = '';
                 photoUploadInput.value = ''; 
                 photoUploadError.classList.add('hidden');
-                photoUploadBtnText.textContent = 'Unggah';
+                photoUploadBtnText.textContent = 'Upload';
                 photoUploadSpinner.classList.add('hidden');
                 confirmPhotoUploadBtn.disabled = false;
+            });
+
+            // Choose file button
+            document.getElementById('choose-file-btn').addEventListener('click', () => {
+                photoUploadInput.click();
             });
 
             cancelPhotoUploadBtn.addEventListener('click', () => {
@@ -1963,9 +2308,11 @@
                     reader.onload = (event) => {
                         photoUploadPreview.src = event.target.result;
                         photoUploadPreview.classList.remove('hidden');
+                        document.getElementById('upload-placeholder').classList.add('hidden');
                     };
                     reader.onerror = (error) => {
                         photoUploadPreview.classList.add('hidden');
+                        document.getElementById('upload-placeholder').classList.remove('hidden');
                         photoUploadError.textContent = "Gagal membaca file.";
                         photoUploadError.classList.remove('hidden');
                         console.error("Error reading file for preview:", error);
@@ -1973,6 +2320,7 @@
                     reader.readAsDataURL(file);
                 } else {
                     photoUploadPreview.classList.add('hidden');
+                    document.getElementById('upload-placeholder').classList.remove('hidden');
                 }
             });
 
@@ -1990,15 +2338,16 @@
                     return;
                 }
 
-                photoUploadBtnText.textContent = 'Mengunggah...';
+                                                photoUploadBtnText.textContent = 'Uploading...';
                 photoUploadSpinner.classList.remove('hidden');
                 confirmPhotoUploadBtn.disabled = true;
                 photoUploadError.classList.add('hidden');
 
                 try {
                     const photoId = Date.now().toString(); 
-                    const filePath = `artifacts/${currentAppId}/users/${userId}/photos/${photoId}_${file.name}`;
-                    const photoUrl = await uploadFileToFirebaseStorage(file, filePath);
+                    // Compress and convert photo to Base64
+                    const compressedFile = await compressImage(file);
+                    const photoUrl = await convertFileToBase64(compressedFile);
 
                     const newPhoto = {
                         id: photoId,
@@ -2013,6 +2362,7 @@
                         photos: arrayUnion(newPhoto)
                     });
                     console.log("Photo uploaded to profile successfully!");
+                    showToast("📸 Foto berhasil diupload!", "success");
                     photoUploadModal.classList.add('hidden');
                     await fetchUserProfile(userId);
                 } catch (error) {
@@ -2020,7 +2370,7 @@
                     photoUploadError.classList.remove('hidden');
                     console.error("Error uploading profile photo:", error);
                 } finally {
-                    photoUploadBtnText.textContent = 'Unggah';
+                    photoUploadBtnText.textContent = 'Upload';
                     photoUploadSpinner.classList.add('hidden');
                     confirmPhotoUploadBtn.disabled = false;
                 }
