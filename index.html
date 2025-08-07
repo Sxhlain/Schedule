@@ -5,36 +5,52 @@
 		<link rel="icon" type="image/svg+xml" href="/LogoTKJ3.jpg" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="google-site-verification" content="WHLWQb7_hoW3fRhZ2XmOLPpfN2EubRtyQmTEq6JmpdA" />
-		<title>XI TKJ 3</title>
+		<title>SMAN 1 GEDEG - XII A1</title>
+		<link rel="manifest" href="/manifest.webmanifest" />
 
 		<!-- Primary Meta Tags -->
-		<meta name="title" content="XI TKJ 3" />
+		<meta name="title" content="SMAN 1 GEDEG - XII A1" />
 		<meta
 			name="description"
-			content="Selamat datang di halaman resmi kelas XI TKJ 3 SMK Persada Husada Indonesia! Mari mengenal lebih dekat tentang kami, siswa-siswi kelas XI TKJ 3, yang tertarik pada Teknik Komputer dan Jaringan." />
+			content="Halaman resmi kelas XII A1 SMAN 1 GEDEG. Jadwal, PR, profil, dan lainnya." />
 
 		<!-- Open Graph / Facebook -->
 		<meta property="og:type" content="website" />
-		<meta property="og:url" content="https://xitkj3.vercel.app/" />
-		<meta property="og:title" content="XI TKJ 3" />
+		<meta property="og:url" content="/" />
+		<meta property="og:title" content="SMAN 1 GEDEG - XII A1" />
 		<meta
 			property="og:description"
-			content="Selamat datang di halaman resmi kelas XI TKJ 3 SMK Persada Husada Indonesia! Mari mengenal lebih dekat tentang kami, siswa-siswi kelas XI TKJ 3, yang tertarik pada Teknik Komputer dan Jaringan." />
-		<meta property="og:image" content="https://xitkj3.vercel.app/Welcome.png" />
+			content="Halaman resmi kelas XII A1 SMAN 1 GEDEG." />
+		<meta property="og:image" content="/Welcome.png" />
 
 		<!-- Twitter -->
 		<meta property="twitter:card" content="summary_large_image" />
-		<meta property="twitter:url" content="https://xitkj3.vercel.app/" />
-		<meta property="twitter:title" content="XI TKJ 3" />
+		<meta property="twitter:url" content="/" />
+		<meta property="twitter:title" content="SMAN 1 GEDEG - XII A1" />
 		<meta
 			property="twitter:description"
-			content="Selamat datang di halaman resmi kelas XI TKJ 3 SMK Persada Husada Indonesia! Mari mengenal lebih dekat tentang kami, siswa-siswi kelas XI TKJ 3, yang tertarik pada Teknik Komputer dan Jaringan." />
-		<meta property="twitter:image" content="https://xitkj3.vercel.app/Welcome.png" />
+			content="Halaman resmi kelas XII A1 SMAN 1 GEDEG." />
+		<meta property="twitter:image" content="/Welcome.png" />
 		<script type="module" crossorigin src="/assets/index-7d358027.js"></script>
 		<link rel="stylesheet" href="/assets/index-cccb37d4.css">
 	</head>
 	<body>
 		<div id="root"></div>
-		
+		<noscript>
+			<p><a href="/app.html" style="display:inline-block;margin:16px;padding:10px 14px;background:#667eea;color:#fff;border-radius:12px;text-decoration:none">Buka Aplikasi</a></p>
+		</noscript>
+		<script>
+			// Sediakan tombol fallback menuju aplikasi lama
+			const link = document.createElement('a');
+			link.href = '/app.html';
+			link.textContent = 'Buka Aplikasi';
+			link.style.cssText = 'position:fixed;right:16px;bottom:16px;background:#667eea;color:#fff;padding:10px 14px;border-radius:12px;text-decoration:none;z-index:9999;';
+			document.body.appendChild(link);
+		</script>
+		<script>
+			if ('serviceWorker' in navigator) {
+				navigator.serviceWorker.register('/service-worker.js').catch(()=>{});
+			}
+		</script>
 	</body>
 </html>
