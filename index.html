@@ -46,5 +46,65 @@
 				navigator.serviceWorker.register('/service-worker.js').catch(()=>{});
 			}
 		</script>
+		<script>
+		// Runtime customization without rebuild
+		(function(){
+			const IG = 'https://www.instagram.com/science.aone?igsh=YmVkY3IwMHJwMDk1';
+			const renameTexts = [
+				['XII TKJ 3','XII A1'],
+				['TO XII TKJ 3','TO XII A1']
+			];
+			const renamePeople = {
+				'Abdul Wahab S.Pdi':'Novva Erwin',
+				'Putry':'Amel',
+				'Jeriko':'Alex',
+				'Pratiwi':'Eiffel',
+				'Paulista':'Farha',
+				'Lista':'Aurel',
+				'Davina':'Melynda'
+			};
+			const removeRoles = ['Keamanan','Kebersihan','Kesehatan','Peralatan'];
+			function sweep(){
+				// Update Instagram links
+				document.querySelectorAll('a[href*="instagram.com"]').forEach(a=>{a.href=IG; a.target='_blank'; a.rel='noopener noreferrer';});
+				// Remove YouTube links
+				document.querySelectorAll('a[href*="youtube.com"]').forEach(a=>{(a.closest('li')||a).remove();});
+				// Footer copyright
+				document.querySelectorAll('#Footer p').forEach(p=>{
+					if(p.textContent && (p.textContent.includes('Kelas') || p.textContent.includes('©'))){
+						p.textContent = `Kelas XII A1 dikelola oleh siswa A1 • © ${new Date().getFullYear()}`;
+					}
+				});
+				// Footer created by
+				const createdH2 = Array.from(document.querySelectorAll('#Footer h2')).find(h=>/created by/i.test(h.textContent||''));
+				if(createdH2){
+					const ul = createdH2.parentElement && createdH2.parentElement.querySelector('ul');
+					if(ul){ ul.innerHTML = '<li class="mb-2"><span class="hover:underline">Nirvana</span></li><li><span class="hover:underline">Inspired by EKIZR &amp; DAFYALL</span></li>'; }
+				}
+				// Replace class title and people names
+				document.querySelectorAll('*').forEach(el=>{
+					el.childNodes.forEach(n=>{
+						if(n.nodeType===Node.TEXT_NODE){
+							let s=n.nodeValue;
+							renameTexts.forEach(([a,b])=>{ if(s && s.includes(a)) s=s.replace(a,b); });
+							if(renamePeople[s]) s = renamePeople[s];
+							if(s!==n.nodeValue) n.nodeValue = s;
+						}
+					});
+					// Remove unwanted roles boxes
+					if(removeRoles.some(r=> (el.textContent||'').trim()===r || (el.textContent||'').includes(r))){
+						const container = el.closest('div');
+						if(container && container.parentElement) container.remove();
+					}
+				});
+				// Reset anonim chat display
+				const chatBox = document.getElementById('KotakPesan');
+				if(chatBox){ chatBox.innerHTML=''; }
+			}
+			const obs = new MutationObserver(()=>{ sweep(); });
+			obs.observe(document.documentElement,{childList:true,subtree:true});
+			setTimeout(sweep,1500);
+		})();
+		</script>
 	</body>
 </html>
