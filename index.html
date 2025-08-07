@@ -11,6 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Sekolah App">
+    <link rel="manifest" href="/manifest.webmanifest">
     
     <!-- Prevent zoom on input focus (iOS) -->
     <meta name="format-detection" content="telephone=no">
@@ -785,7 +786,7 @@
                     <div class="glass-effect rounded-2xl p-6 mb-6">
                         <h4 class="text-xl font-bold text-white mb-4">🔗 Bagikan Profil Anda</h4>
                         <p class="text-white text-opacity-80 mb-4">Bagikan link profil Anda kepada teman untuk menambahkan mereka ke daftar teman.</p>
-                        <div class="flex space-x-3">
+                        <div class="flex flex-col sm:flex-row sm:space-x-3 space-y-3 sm:space-y-0">
                             <input type="text" id="profile-link" readonly class="flex-1 px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-xl text-white" placeholder="Link profil akan muncul di sini...">
                             <button id="copy-profile-link-btn" class="modern-btn px-6 py-3 text-white font-semibold rounded-xl flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -800,7 +801,7 @@
                     <div class="glass-effect rounded-2xl p-6 mb-6">
                         <h4 class="text-xl font-bold text-white mb-4">➕ Tambah Teman</h4>
                         <p class="text-white text-opacity-80 mb-4">Masukkan link profil teman untuk menambahkan mereka.</p>
-                        <div class="flex space-x-3">
+                        <div class="flex flex-col sm:flex-row sm:space-x-3 space-y-3 sm:space-y-0">
                             <input type="text" id="friend-link-input" placeholder="Tempel link profil teman di sini..." class="flex-1 px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-xl text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
                             <button id="add-friend-btn" class="modern-btn px-6 py-3 text-white font-semibold rounded-xl flex items-center">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1422,7 +1423,16 @@
                 currentClassName = className;
                 currentScheduleData = allScheduleData[className].data;
                 currentClassDisplay.textContent = `Kelas: ${className}`;
-                renderSchedules();
+                // Reset container and re-render to avoid mixing schedules
+                const maxIndex = currentScheduleData.length - 1;
+                if (currentDayIndex < 0 || currentDayIndex > maxIndex) {
+                    currentDayIndex = 0;
+                }
+                const scheduleContainer = document.getElementById('schedule-container');
+                if (scheduleContainer) {
+                    scheduleContainer.innerHTML = '';
+                }
+                updateDisplay();
                 // Set the selected option in the classSelect dropdown
                 classSelect.value = className;
             }
@@ -2136,18 +2146,16 @@
                             <!-- Action Buttons (Always Visible) -->
                             <div class="absolute bottom-2 left-2 right-2 flex justify-between items-center">
                                 <div class="flex space-x-2">
-                                    ${!isCurrentUser ? `
-                                        <button data-photo-id="${photo.id}" data-photo-user-id="${photo.userId}" class="like-photo-btn bg-black bg-opacity-50 backdrop-blur-sm text-white rounded-full p-2 hover:bg-opacity-70 transition-all transform hover:scale-110">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="${photo.likes && photo.likes.includes(userId) ? 'red' : 'none'}" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                                            </svg>
-                                        </button>
-                                        <button class="comment-photo-btn bg-black bg-opacity-50 backdrop-blur-sm text-white rounded-full p-2 hover:bg-opacity-70 transition-all transform hover:scale-110">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                            </svg>
-                                        </button>
-                                    ` : ''}
+                                    <button data-photo-id="${photo.id}" data-photo-user-id="${photo.userId}" class="like-photo-btn bg-black bg-opacity-50 backdrop-blur-sm text-white rounded-full p-2 hover:bg-opacity-70 transition-all transform hover:scale-110">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="${photo.likes && photo.likes.includes(userId) ? 'red' : 'none'}" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                    </button>
+                                    <button class="comment-photo-btn bg-black bg-opacity-50 backdrop-blur-sm text-white rounded-full p-2 hover:bg-opacity-70 transition-all transform hover:scale-110">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                    </button>
                                 </div>
                                 
                                 ${isCurrentUser ? `
@@ -3143,25 +3151,39 @@
                     return;
                 }
 
+                let friendId = "";
+                // Try absolute URL first
                 try {
                     const url = new URL(friendLink);
-                    const friendId = url.searchParams.get('profile');
-                    
-                    if (!friendId) {
-                        showToast("Link profil tidak valid", "error");
-                        return;
-                    }
-
-                    if (friendId === userId) {
-                        showToast("Tidak bisa menambahkan diri sendiri", "warning");
-                        return;
-                    }
-
-                    await addFriend(friendId);
-                    friendLinkInput.value = '';
-                } catch (error) {
-                    showToast("Link profil tidak valid", "error");
+                    friendId = url.searchParams.get('profile') || '';
+                } catch (_) {
+                    // Not a full URL, continue
                 }
+
+                // Fallback: regex extract ?profile=... from any text
+                if (!friendId) {
+                    const match = friendLink.match(/[?&]profile=([^&]+)/);
+                    if (match) {
+                        friendId = decodeURIComponent(match[1]);
+                    }
+                }
+
+                // Accept raw UID
+                if (!friendId && /^[A-Za-z0-9_-]{10,}$/.test(friendLink)) {
+                    friendId = friendLink;
+                }
+
+                if (!friendId) {
+                    showToast("Link profil tidak valid", "error");
+                    return;
+                }
+                if (friendId === userId) {
+                    showToast("Tidak bisa menambahkan diri sendiri", "warning");
+                    return;
+                }
+
+                await addFriend(friendId);
+                friendLinkInput.value = '';
             });
 
             async function addFriend(friendId) {
@@ -3422,6 +3444,16 @@
             requestNotificationPermission();
 
             setInterval(checkClassScheduleForNotifications, 60 * 1000); 
+
+            // Register Service Worker for PWA support
+            if ('serviceWorker' in navigator) {
+                try {
+                    await navigator.serviceWorker.register('/service-worker.js');
+                    console.log('Service Worker registered');
+                } catch (err) {
+                    console.error('Service Worker registration failed', err);
+                }
+            }
         });
     </script>
 </body>
