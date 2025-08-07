@@ -1,0 +1,3460 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Jadwal Pelajaran & Sosial Siswa</title>
+    
+    <!-- PWA and Mobile Optimization -->
+    <meta name="theme-color" content="#667eea">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sekolah App">
+    <link rel="manifest" href="/manifest.webmanifest">
+    
+    <!-- Prevent zoom on input focus (iOS) -->
+    <meta name="format-detection" content="telephone=no">
+    
+    <!-- Favicon for different devices -->
+    <link rel="icon" type="image/png" sizes="32x32" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+        }
+        
+        /* Modern Glassmorphism Effect */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Custom scrollbar for better aesthetics */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(45deg, #764ba2, #667eea);
+        }
+        
+        /* Floating Animation */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        /* Pulse Animation */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* Slide In Animation */
+        @keyframes slideInUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideInLeft {
+            from {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Modern Button Hover Effects */
+        .modern-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .modern-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .modern-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .modern-btn:hover::before {
+            left: 100%;
+        }
+        
+        /* Card Hover Effects */
+        .hover-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Profile Grid Animation */
+        .profile-grid {
+            display: grid;
+            gap: 20px;
+            animation: fadeIn 0.8s ease;
+        }
+        
+        .profile-grid-item {
+            animation: slideInUp 0.6s ease;
+            animation-fill-mode: both;
+        }
+        
+        .profile-grid-item:nth-child(1) { animation-delay: 0.1s; }
+        .profile-grid-item:nth-child(2) { animation-delay: 0.2s; }
+        .profile-grid-item:nth-child(3) { animation-delay: 0.3s; }
+        .profile-grid-item:nth-child(4) { animation-delay: 0.4s; }
+        .profile-grid-item:nth-child(5) { animation-delay: 0.5s; }
+        .profile-grid-item:nth-child(6) { animation-delay: 0.6s; }
+        
+        /* Instagram-like Photo Grid */
+        .instagram-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 4px;
+            padding: 20px 0;
+        }
+        
+        .instagram-post {
+            position: relative;
+            aspect-ratio: 1;
+            overflow: hidden;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .instagram-post:hover {
+            transform: scale(1.05);
+            z-index: 2;
+        }
+        
+        .instagram-post img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .instagram-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .instagram-post:hover .instagram-overlay {
+            opacity: 1;
+        }
+        
+        /* Modern Modal Animation */
+        .modal-animate {
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        /* Enhanced Schedule Animation */
+        .schedule-container {
+            position: relative;
+            overflow: hidden;
+            min-height: 400px;
+        }
+        
+        .day-schedule {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .day-schedule.slide-left-enter {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        
+        .day-schedule.slide-left-exit {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+        
+        .day-schedule.slide-right-enter {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+        
+        .day-schedule.slide-right-exit {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        
+        .day-schedule.active {
+            transform: translateX(0);
+            opacity: 1;
+            position: relative;
+        }
+        
+        /* Schedule Card Animations */
+        .schedule-card {
+            transform: translateY(20px);
+            opacity: 0;
+            animation: scheduleSlideIn 0.6s ease forwards;
+        }
+        
+        .schedule-card:nth-child(1) { animation-delay: 0.1s; }
+        .schedule-card:nth-child(2) { animation-delay: 0.2s; }
+        .schedule-card:nth-child(3) { animation-delay: 0.3s; }
+        .schedule-card:nth-child(4) { animation-delay: 0.4s; }
+        .schedule-card:nth-child(5) { animation-delay: 0.5s; }
+        .schedule-card:nth-child(6) { animation-delay: 0.6s; }
+        .schedule-card:nth-child(7) { animation-delay: 0.7s; }
+        
+        @keyframes scheduleSlideIn {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        /* Modern Schedule Cards */
+        .modern-schedule-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .modern-schedule-card:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Navigation Button Enhancements */
+        .schedule-nav-btn {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .schedule-nav-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .schedule-nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Enhanced Mobile Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background-attachment: fixed;
+            }
+            
+            .glass-effect {
+                background: rgba(255, 255, 255, 0.12);
+                backdrop-filter: blur(8px);
+                border: 1px solid rgba(255, 255, 255, 0.15);
+            }
+            
+            .profile-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .instagram-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+            
+            .modern-schedule-card {
+                padding: 12px;
+                margin-bottom: 8px;
+            }
+            
+            .schedule-nav-btn {
+                width: 40px;
+                height: 40px;
+            }
+            
+            /* Mobile-specific button sizes */
+            .modern-btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+            
+            /* Touch-friendly interaction areas */
+            .instagram-post .like-photo-btn,
+            .instagram-post .comment-photo-btn,
+            .instagram-post .three-dot-menu-btn {
+                width: 40px;
+                height: 40px;
+                padding: 8px;
+            }
+            
+            /* Mobile modal adjustments */
+            .modal-animate {
+                margin: 8px;
+                max-height: calc(100vh - 16px);
+            }
+        }
+
+        /* iOS Safari specific adjustments */
+        @supports (-webkit-touch-callout: none) {
+            body {
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+            }
+            
+            /* Safe area adjustments for iPhone notch */
+            @media (max-width: 768px) {
+                .fixed {
+                    padding-left: env(safe-area-inset-left);
+                    padding-right: env(safe-area-inset-right);
+                }
+                
+                #sidebar {
+                    padding-top: max(1rem, env(safe-area-inset-top));
+                    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+                }
+                
+                header {
+                    padding-top: max(1rem, env(safe-area-inset-top));
+                }
+            }
+        }
+
+        /* Android Chrome specific adjustments */
+        @media (max-width: 768px) and (orientation: portrait) {
+            /* Account for Android navigation bar */
+            main {
+                padding-bottom: max(1rem, env(safe-area-inset-bottom, 20px));
+            }
+            
+            /* Improve touch targets */
+            .schedule-nav-btn,
+            .like-photo-btn,
+            .comment-photo-btn,
+            .three-dot-menu-btn {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+
+        /* Landscape mode optimizations */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .instagram-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .modal-animate {
+                max-width: 90vw;
+                max-height: 95vh;
+            }
+        }
+
+        /* Windows touch device adjustments */
+        @media (hover: none) and (pointer: coarse) {
+            .hover-card:hover {
+                transform: none;
+            }
+            
+            .hover-card:active {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #3b82f6;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Overlay for mobile sidebar */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 30;
+            display: none; /* Hidden by default */
+        }
+        .sidebar-overlay.active {
+            display: block;
+        }
+
+        /* Sidebar transition */
+        #sidebar {
+            transition: transform 0.3s ease-out;
+            transform: translateX(-100%); /* Hidden by default on mobile */
+        }
+        #sidebar.active {
+            transform: translateX(0); /* Shown on mobile */
+        }
+
+        /* Main content area on larger screens */
+        @media (min-width: 768px) { /* md breakpoint */
+            #sidebar {
+                transform: translateX(0); /* Always visible on desktop */
+            }
+        }
+
+        /* Kebab menu for photo deletion */
+        .kebab-menu {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 9999px; /* Full rounded */
+            padding: 4px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            z-index: 10;
+        }
+
+        .group:hover .kebab-menu {
+            opacity: 1;
+        }
+
+        .kebab-menu-dropdown {
+            position: absolute;
+            top: 100%; /* Position below the kebab menu button */
+            right: 0;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 20;
+            min-width: 120px;
+            overflow: hidden;
+        }
+
+        .kebab-menu-dropdown button {
+            width: 100%;
+            padding: 8px 12px;
+            text-align: left;
+            font-size: 0.875rem; /* text-sm */
+            color: #ef4444; /* red-500 */
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .kebab-menu-dropdown button:hover {
+            background-color: #fef2f2; /* red-50 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+
+    <!-- Mobile Header (Visible only on small screens) -->
+    <header class="md:hidden flex items-center justify-between p-4 glass-effect text-white shadow-md m-2 rounded-2xl">
+        <button id="hamburger-menu" class="p-2 rounded-md hover:bg-white hover:bg-opacity-20 transition-all duration-300">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+        </button>
+        <h1 class="text-xl font-bold">Aplikasi Sekolah</h1>
+        <div class="w-6"></div> <!-- Placeholder for alignment -->
+    </header>
+
+    <!-- Main Application Container -->
+    <div class="flex flex-grow">
+        <!-- Sidebar Overlay (for mobile) -->
+        <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+        <!-- Sidebar -->
+        <nav id="sidebar" class="fixed inset-y-0 left-0 w-64 glass-effect text-white p-4 z-40 md:relative md:translate-x-0 md:flex-shrink-0 md:m-2 md:rounded-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Menu</h2>
+                <button id="close-sidebar" class="md:hidden p-2 rounded-md hover:bg-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <ul class="space-y-2">
+                <li>
+                    <a href="#" id="nav-jadwal" class="flex items-center p-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
+                        <span class="text-2xl mr-3">📅</span>
+                        Jadwal Pelajaran
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="nav-pr" class="flex items-center p-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
+                        <span class="text-2xl mr-3">📝</span>
+                        Daftar PR
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="nav-history-pr" class="flex items-center p-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
+                        <span class="text-2xl mr-3">📚</span>
+                        Riwayat PR
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="nav-profile" class="flex items-center p-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
+                        <span class="text-2xl mr-3">👤</span>
+                        Profil Saya
+                    </a>
+                </li>
+                <li>
+                    <a href="#" id="nav-friends" class="flex items-center p-3 rounded-xl hover:bg-white hover:bg-opacity-20 transition-all duration-300 hover:transform hover:scale-105">
+                        <span class="text-2xl mr-3">👥</span>
+                        Teman Saya
+                    </a>
+                </li>
+            </ul>
+            <div class="absolute bottom-4 left-4 right-4">
+                <div class="flex items-center justify-between text-sm text-white text-opacity-80 mb-2">
+                    <p id="user-id-display" class="truncate">Belum login</p>
+                    <button id="logout-btn" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-3 rounded-xl text-sm hidden transition-all transform hover:scale-105 hover:shadow-lg">🚪 Logout</button>
+                </div>
+                <button id="auth-btn" class="w-full modern-btn text-white font-bold py-3 px-4 rounded-xl">🔐 Login / Register</button>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <main class="flex-grow p-4 md:p-8 overflow-y-auto">
+            <div class="w-full max-w-4xl mx-auto glass-effect rounded-2xl p-6 md:p-8 backdrop-blur-xl">
+
+                <!-- Jadwal Pelajaran Section -->
+                <section id="jadwal-section" class="content-section">
+                    <h1 class="text-3xl font-bold text-center mb-4 md:mb-6 text-white">📅 Jadwal Pelajaran</h1>
+                    <div class="glass-effect rounded-2xl p-6 mb-6">
+                        <div class="flex justify-center items-center mb-4">
+                            <label for="class-select" class="mr-3 text-white font-semibold">📚 Pilih Kelas:</label>
+                            <select id="class-select" class="px-4 py-2 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-xl text-white font-semibold focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                                <!-- Options will be populated by JS -->
+                            </select>
+                        </div>
+                        <p id="current-class-display" class="text-center text-white text-opacity-90 font-semibold">Kelas: 12-1 (A1)</p>
+                    </div>
+                    
+                    <div class="flex justify-between items-center mb-6">
+                        <button id="prev-day" class="schedule-nav-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+                        </button>
+                        <div class="text-center">
+                            <h2 id="current-day-title" class="text-2xl font-bold text-white mb-1"></h2>
+                            <div class="flex space-x-1 justify-center">
+                                <div class="day-indicator w-2 h-2 rounded-full bg-white bg-opacity-30" data-day="0"></div>
+                                <div class="day-indicator w-2 h-2 rounded-full bg-white bg-opacity-30" data-day="1"></div>
+                                <div class="day-indicator w-2 h-2 rounded-full bg-white bg-opacity-30" data-day="2"></div>
+                                <div class="day-indicator w-2 h-2 rounded-full bg-white bg-opacity-30" data-day="3"></div>
+                                <div class="day-indicator w-2 h-2 rounded-full bg-white bg-opacity-30" data-day="4"></div>
+                            </div>
+                        </div>
+                        <button id="next-day" class="schedule-nav-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+                        </button>
+                    </div>
+                    <div id="schedule-container" class="schedule-container">
+                        <!-- Schedules will be injected here by JS -->
+                    </div>
+                </section>
+
+                <!-- Daftar PR Section -->
+                <section id="pr-section" class="content-section hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-3xl font-bold text-white">📝 Daftar PR</h3>
+                        <button id="add-pr-btn" class="modern-btn text-white font-bold py-2 px-6 rounded-xl hidden flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Tambah PR
+                        </button>
+                    </div>
+                    <div id="pr-list" class="space-y-4 pr-2 custom-scrollbar">
+                        <p id="no-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8 hidden">Belum ada PR. Selamat! 🎉</p>
+                        <div id="loading-pr" class="flex justify-center items-center py-4 hidden">
+                            <div class="spinner"></div>
+                            <span class="ml-2 text-gray-500 dark:text-gray-400">Memuat PR...</span>
+                        </div>
+                        <p id="login-prompt-message" class="text-gray-500 dark:text-gray-400 text-center mt-8 hidden">Login untuk melihat dan menambahkan PR Anda.</p>
+                    </div>
+                </section>
+
+                <!-- Riwayat PR Section -->
+                <section id="history-pr-section" class="content-section hidden">
+                    <h3 class="text-3xl font-bold mb-6 text-white">📚 Riwayat PR Selesai</h3>
+                    <div id="history-pr-list" class="space-y-4 pr-2 custom-scrollbar">
+                        <p id="no-history-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8 hidden">Belum ada PR yang diselesaikan.</p>
+                        <div id="loading-history-pr" class="flex justify-center items-center py-4 hidden">
+                            <div class="spinner"></div>
+                            <span class="ml-2 text-gray-500 dark:text-gray-400">Memuat riwayat PR...</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Profil Saya Section -->
+                <section id="profile-section" class="content-section hidden">
+                    <div class="profile-grid">
+                        <!-- Profile Header -->
+                        <div class="profile-grid-item glass-effect rounded-2xl p-6 text-white">
+                            <div class="flex flex-col md:flex-row items-center space-y-6 md:space-y-0 md:space-x-6">
+                                <div class="relative group">
+                                    <img id="profile-avatar" class="w-32 h-32 rounded-full object-cover border-4 border-white shadow-xl cursor-pointer transition-transform hover:scale-105" src="https://placehold.co/128x128/cccccc/333333?text=Avatar" alt="Profile Avatar">
+                                    <button id="edit-avatar-btn" class="absolute bottom-2 right-2 bg-white text-gray-800 rounded-full p-3 shadow-lg hover:bg-gray-100 transition-all transform hover:scale-110 opacity-0 group-hover:opacity-100">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                                    </button>
+                                </div>
+                                <div class="flex-1 text-center md:text-left">
+                                    <input type="text" id="profile-name-input" class="text-3xl font-bold bg-transparent border-b-2 border-white border-opacity-30 focus:border-opacity-100 focus:outline-none mb-2 w-full text-center md:text-left placeholder-white placeholder-opacity-70" placeholder="Nama Pengguna">
+                                    <p id="profile-email" class="text-white text-opacity-80 mb-2">email@example.com</p>
+                                    <p id="profile-class" class="text-white font-semibold">Kelas: Belum Dipilih</p>
+                                    
+                                    <!-- Stats -->
+                                    <div class="flex justify-center md:justify-start space-x-8 mt-4">
+                                        <div class="text-center">
+                                            <p class="text-2xl font-bold" id="post-count">0</p>
+                                            <p class="text-white text-opacity-80 text-sm">Posts</p>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="text-2xl font-bold" id="follower-count">0</p>
+                                            <p class="text-white text-opacity-80 text-sm">Followers</p>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="text-2xl font-bold" id="following-count">0</p>
+                                            <p class="text-white text-opacity-80 text-sm">Following</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bio Section -->
+                        <div class="profile-grid-item glass-effect rounded-2xl p-6 text-white">
+                            <label for="profile-bio-input" class="block text-lg font-semibold mb-3">Bio</label>
+                            <textarea id="profile-bio-input" rows="3" class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-xl text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 resize-none" placeholder="Ceritakan tentang diri Anda..."></textarea>
+                            <div class="flex space-x-3 mt-4">
+                                <button id="save-profile-btn" class="flex-1 modern-btn text-white font-bold py-3 px-6 rounded-xl">
+                                    💾 Simpan Profil
+                                </button>
+                                <button id="share-profile-btn" class="bg-white bg-opacity-20 text-white font-bold py-3 px-6 rounded-xl hover:bg-opacity-30 transition-all flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                                    </svg>
+                                    🔗 Share
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Posts Section -->
+                        <div class="profile-grid-item glass-effect rounded-2xl p-6 text-white col-span-full">
+                            <div class="flex justify-between items-center mb-6">
+                                <h3 class="text-2xl font-bold">📸 Postingan Saya</h3>
+                                <button id="upload-profile-photo-btn" class="modern-btn text-white font-bold py-2 px-6 rounded-xl flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Upload Foto
+                                </button>
+                            </div>
+                            
+                            <div id="profile-photos" class="instagram-grid">
+                                <!-- Photos will be injected here -->
+                            </div>
+                            <p id="no-photos-message" class="text-white text-opacity-70 text-center py-12 hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Belum ada foto yang diunggah.<br>
+                                <span class="text-sm">Bagikan momen terbaik Anda!</span>
+                            </p>
+                        </div>
+
+                        <!-- Active Homework Section -->
+                        <div class="profile-grid-item glass-effect rounded-2xl p-6 text-white col-span-full">
+                            <h3 class="text-2xl font-bold mb-6">📝 PR Aktif Saya</h3>
+                            <div id="profile-pr-list" class="space-y-4 custom-scrollbar max-h-60 overflow-y-auto">
+                                <p id="no-profile-pr-message" class="text-white text-opacity-70 text-center py-8 hidden">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Semua PR sudah selesai! 🎉
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Friends Section -->
+                <section id="friends-section" class="content-section hidden">
+                    <h3 class="text-3xl font-bold mb-6 text-white">👥 Teman Saya</h3>
+                    
+                    <!-- Share Profile Section -->
+                    <div class="glass-effect rounded-2xl p-6 mb-6">
+                        <h4 class="text-xl font-bold text-white mb-4">🔗 Bagikan Profil Anda</h4>
+                        <p class="text-white text-opacity-80 mb-4">Bagikan link profil Anda kepada teman untuk menambahkan mereka ke daftar teman.</p>
+                        <div class="flex flex-col sm:flex-row sm:space-x-3 space-y-3 sm:space-y-0">
+                            <input type="text" id="profile-link" readonly class="flex-1 px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-xl text-white" placeholder="Link profil akan muncul di sini...">
+                            <button id="copy-profile-link-btn" class="modern-btn px-6 py-3 text-white font-semibold rounded-xl flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                Salin
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Add Friend Section -->
+                    <div class="glass-effect rounded-2xl p-6 mb-6">
+                        <h4 class="text-xl font-bold text-white mb-4">➕ Tambah Teman</h4>
+                        <p class="text-white text-opacity-80 mb-4">Masukkan link profil teman untuk menambahkan mereka.</p>
+                        <div class="flex flex-col sm:flex-row sm:space-x-3 space-y-3 sm:space-y-0">
+                            <input type="text" id="friend-link-input" placeholder="Tempel link profil teman di sini..." class="flex-1 px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-xl text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                            <button id="add-friend-btn" class="modern-btn px-6 py-3 text-white font-semibold rounded-xl flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Tambah
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Friends List -->
+                    <div class="glass-effect rounded-2xl p-6">
+                        <h4 class="text-xl font-bold text-white mb-4">📋 Daftar Teman</h4>
+                        <div id="friends-list" class="space-y-3">
+                            <p id="no-friends-message" class="text-white text-opacity-70 text-center py-8 hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                Belum ada teman.<br>
+                                <span class="text-sm">Bagikan link profil Anda untuk menambah teman!</span>
+                            </p>
+                            <div id="loading-friends" class="flex justify-center items-center py-4 hidden">
+                                <div class="spinner"></div>
+                                <span class="ml-2 text-white text-opacity-70">Memuat daftar teman...</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- View Other User Profile Modal -->
+                <div id="other-profile-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto custom-scrollbar">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-bold" id="other-profile-modal-title">Profil Pengguna</h2>
+                            <button id="close-other-profile-modal-btn" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        <div id="other-profile-content">
+                            <div class="flex items-center space-x-4 mb-6">
+                                <img id="other-profile-avatar" class="w-24 h-24 rounded-full object-cover border-4 border-blue-500" src="https://placehold.co/96x96/cccccc/333333?text=Avatar" alt="Profile Avatar">
+                                <div>
+                                    <h4 id="other-profile-name" class="text-2xl font-bold"></h4>
+                                    <p id="other-profile-email" class="text-gray-600 dark:text-gray-400"></p>
+                                    <p id="other-profile-class" class="text-blue-600 dark:text-blue-400 font-semibold"></p>
+                                </div>
+                            </div>
+                            <div class="flex justify-around text-center mb-6">
+                                <div>
+                                    <p class="text-2xl font-bold" id="other-follower-count">0</p>
+                                    <p class="text-gray-600 dark:text-gray-400">Follower</p>
+                                </div>
+                                <div>
+                                    <p class="text-2xl font-bold" id="other-following-count">0</p>
+                                    <p class="text-gray-600 dark:text-gray-400">Following</p>
+                                </div>
+                            </div>
+                            <button id="follow-unfollow-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition-transform transform hover:scale-105 mb-6 hidden">
+                                Follow
+                            </button>
+
+                            <h4 class="text-xl font-bold mb-4">Postingan Foto</h4>
+                            <div id="other-profile-photos" class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                <p id="no-other-photos-message" class="text-gray-500 dark:text-gray-400 col-span-full text-center hidden">Pengguna ini belum mengunggah foto.</p>
+                            </div>
+
+                            <h4 class="text-xl font-bold mt-8 mb-4">PR Aktif</h4>
+                            <div id="other-profile-pr-list" class="space-y-3 custom-scrollbar max-h-60 overflow-y-auto">
+                                <p id="no-other-profile-pr-message" class="text-gray-500 dark:text-gray-400 text-center mt-8 hidden">Pengguna ini tidak memiliki PR aktif.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo Detail Modal (for comments and likes) -->
+                <div id="photo-detail-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+                    <div class="glass-effect rounded-2xl shadow-xl w-full max-w-2xl max-h-[95vh] overflow-hidden modal-animate">
+                        <!-- Header -->
+                        <div class="flex justify-between items-center p-6 border-b border-white border-opacity-20">
+                            <h2 class="text-xl font-bold text-white">📸 Detail Postingan</h2>
+                            <button id="close-photo-detail-modal-btn" class="p-2 rounded-xl bg-white bg-opacity-20 hover:bg-opacity-30 transition-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Photo -->
+                        <div class="p-6">
+                            <img id="detail-photo-img" src="" alt="Detail Photo" class="w-full h-auto max-h-96 object-contain rounded-xl shadow-lg mb-6">
+                            
+                            <!-- Interaction Buttons -->
+                            <div class="flex items-center space-x-6 mb-6">
+                                <button id="like-btn" class="flex items-center space-x-2 text-white hover:text-red-400 transition-colors group">
+                                    <div class="p-2 rounded-xl bg-white bg-opacity-20 group-hover:bg-red-500 group-hover:bg-opacity-20 transition-all">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                        </svg>
+                                    </div>
+                                    <span id="like-count" class="font-semibold">0</span>
+                                </button>
+                                
+                                <div class="flex items-center space-x-2 text-white">
+                                    <div class="p-2 rounded-xl bg-white bg-opacity-20">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                    </div>
+                                    <span id="comment-count" class="font-semibold">0 Komentar</span>
+                                </div>
+                            </div>
+
+                            <!-- Liked By List -->
+                            <div id="liked-by-list" class="mb-6 text-white text-opacity-80 text-sm hidden">
+                                <p class="font-semibold mb-2 text-white">❤️ Disukai oleh:</p>
+                                <ul id="liked-by-ul" class="flex flex-wrap gap-2"></ul>
+                            </div>
+
+                            <!-- Comments Section -->
+                            <div class="space-y-4 mb-6">
+                                <h4 class="font-semibold text-white">💬 Komentar</h4>
+                                <div id="comments-list" class="space-y-3 max-h-40 overflow-y-auto custom-scrollbar">
+                                    <p id="no-comments-message" class="text-white text-opacity-70 text-center py-4 hidden">
+                                        Belum ada komentar. Jadilah yang pertama berkomentar!
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Comment Form -->
+                            <form id="comment-form" class="flex space-x-3">
+                                <input type="text" id="comment-input" placeholder="Tulis komentar..." class="flex-grow px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-xl text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50">
+                                <button type="submit" class="modern-btn px-6 py-3 text-white font-semibold rounded-xl flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                    </svg>
+                                    Kirim
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for adding PR -->
+    <div id="pr-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-40">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-4">Tambah PR Baru</h2>
+            <form id="pr-form">
+                <div class="mb-4">
+                    <label for="pr-desc" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Deskripsi PR</label>
+                    <input type="text" id="pr-desc" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700" required>
+                </div>
+                <div class="mb-4">
+                    <label for="pr-due-date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Deadline PR (Opsional)</label>
+                    <input type="date" id="pr-due-date" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50 dark:bg-gray-700">
+                </div>
+                <div class="mb-6">
+                    <label for="pr-file" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload Foto atau Dokumen (Opsional)</label>
+                    <input type="file" id="pr-file" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 dark:file:bg-gray-700 dark:file:text-gray-300 dark:hover:file:bg-gray-600">
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-pr-btn" class="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-gray-500">Batal</button>
+                    <button type="submit" id="save-pr-btn" class="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal for Auth (Login/Register) -->
+    <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-40">
+        <div class="glass-effect rounded-2xl shadow-xl p-8 w-full max-w-md modal-animate">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span class="text-3xl">🔐</span>
+                </div>
+                <h2 id="auth-modal-title" class="text-2xl font-bold text-white">Selamat Datang</h2>
+                <p class="text-white text-opacity-80 text-sm mt-2">Masuk ke akun Anda untuk melanjutkan</p>
+            </div>
+            
+            <form id="auth-form" class="space-y-6">
+                <div>
+                    <label for="auth-email" class="block text-sm font-semibold text-white mb-2">📧 Email</label>
+                    <input type="email" id="auth-email" class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-xl text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50" placeholder="masukkan email Anda" required>
+                </div>
+                <div>
+                    <label for="auth-password" class="block text-sm font-semibold text-white mb-2">🔒 Password</label>
+                    <input type="password" id="auth-password" class="w-full px-4 py-3 bg-white bg-opacity-20 border border-white border-opacity-30 rounded-xl text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50" placeholder="masukkan password" required>
+                </div>
+                
+                <p id="auth-error-message" class="text-red-300 text-sm text-center hidden"></p>
+                
+                <div class="flex space-x-3">
+                    <button type="button" id="cancel-auth-btn" class="flex-1 bg-white bg-opacity-20 text-white font-semibold py-3 px-6 rounded-xl hover:bg-opacity-30 transition-all">
+                        Batal
+                    </button>
+                    <button type="submit" id="auth-submit-btn" class="flex-1 modern-btn text-white font-semibold py-3 px-6 rounded-xl">
+                        Masuk
+                    </button>
+                </div>
+            </form>
+            
+            <button id="toggle-auth-mode" class="w-full mt-6 text-white text-opacity-80 hover:text-opacity-100 transition-colors text-center">
+                Belum punya akun? <span class="font-semibold underline">Daftar di sini</span>
+            </button>
+            
+            <div class="mt-6">
+                <div class="relative flex items-center justify-center">
+                    <div class="flex-grow border-t border-white border-opacity-30"></div>
+                    <span class="flex-shrink mx-4 text-white text-opacity-60 text-sm">ATAU</span>
+                    <div class="flex-grow border-t border-white border-opacity-30"></div>
+                </div>
+                
+                <button id="google-login-btn" class="mt-4 w-full bg-white text-gray-800 font-semibold py-3 px-6 rounded-xl flex items-center justify-center hover:bg-opacity-90 transition-all transform hover:scale-105 shadow-lg">
+                    <svg class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.0003 4.75C14.0263 4.75 15.8453 5.483 17.2023 6.757L20.0483 3.911C18.0673 2.097 15.2303 1 12.0003 1C7.79533 1 4.10933 3.447 2.36833 7.049L5.62633 9.516C6.44633 7.054 8.94833 4.75 12.0003 4.75Z" fill="#EA4335"/>
+                        <path d="M23.0003 12.0003C23.0003 11.3463 22.9463 10.6933 22.8443 10.0533H12.0003V14.3913H18.3983C18.1183 15.6173 17.3473 16.6693 16.2043 17.3883L19.4623 19.8553C21.3193 18.1073 23.0003 15.0643 23.0003 12.0003Z" fill="#4285F4"/>
+                        <path d="M5.62598 14.484C5.24498 13.339 5.03198 12.17 5.03198 11.0003C5.03198 9.83033 5.24498 8.66133 5.62598 7.51633L2.36898 5.04933C1.04198 7.73433 1.04198 10.2663 2.36898 12.9513L5.62598 14.484Z" fill="#FBBC05"/>
+                        <path d="M12.0003 20.25C15.2303 20.25 18.0673 19.143 20.0483 17.329L17.2023 14.483C15.8453 15.757 14.0263 16.49 12.0003 16.49C8.94833 16.49 6.44633 14.186 5.62633 11.724L2.36833 14.191C4.10933 17.793 7.79533 20.25 12.0003 20.25Z" fill="#34A853"/>
+                    </svg>
+                    Masuk dengan Google
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Modal for LLM Response -->
+    <div id="llm-response-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-40">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold" id="llm-modal-title">Bantuan PR ✨</h2>
+                <button id="close-llm-modal-btn" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+            </div>
+            <div id="llm-response-content" class="text-gray-700 dark:text-gray-300 max-h-80 overflow-y-auto custom-scrollbar">
+                <div id="llm-loading-spinner" class="flex justify-center items-center py-4 hidden">
+                    <div class="spinner"></div>
+                    <span class="ml-2 text-gray-500 dark:text-gray-400">Memuat penjelasan...</span>
+                </div>
+                <p id="llm-response-text"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Class Selection Modal (shown after login if class not set) -->
+    <div id="class-selection-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-4">Pilih Kelas Anda</h2>
+            <p class="text-gray-700 dark:text-gray-300 mb-4">Pilih kelas default Anda untuk melihat jadwal dan PR yang relevan.</p>
+            <select id="initial-class-select" class="w-full px-3 py-2 border rounded-md bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 mb-6">
+                <!-- Options will be populated by JS -->
+            </select>
+            <button id="save-class-selection-btn" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Simpan Pilihan</button>
+        </div>
+    </div>
+
+    <!-- Image Overlay for PR files -->
+    <div id="image-overlay" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 hidden">
+        <img id="overlay-image" src="" alt="Full size image" class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-lg">
+    </div>
+
+    <!-- New Modal for Photo Upload with Preview and Loading -->
+    <div id="photo-upload-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="glass-effect rounded-2xl shadow-xl p-6 w-full max-w-md modal-animate">
+            <h2 class="text-2xl font-bold mb-6 text-white text-center">📸 Upload Foto Baru</h2>
+            <div class="flex flex-col items-center mb-6">
+                <div class="relative mb-4">
+                    <img id="photo-upload-preview" class="w-40 h-40 object-cover rounded-2xl border-4 border-white border-opacity-50 shadow-lg hidden" src="" alt="Pratinjau Foto">
+                    <div id="upload-placeholder" class="w-40 h-40 border-4 border-dashed border-white border-opacity-50 rounded-2xl flex items-center justify-center">
+                        <div class="text-center text-white text-opacity-70">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p class="text-sm">Pilih Foto</p>
+                        </div>
+                    </div>
+                </div>
+                <input type="file" id="photo-upload-input" accept="image/*" class="hidden">
+                <button type="button" id="choose-file-btn" class="modern-btn text-white font-semibold py-2 px-6 rounded-xl">
+                    Pilih File
+                </button>
+            </div>
+            <p id="photo-upload-error" class="text-red-300 text-sm mb-4 hidden text-center"></p>
+            <div class="flex space-x-3">
+                <button type="button" id="cancel-photo-upload-btn" class="flex-1 bg-white bg-opacity-20 text-white font-semibold py-3 px-6 rounded-xl hover:bg-opacity-30 transition-all">
+                    Batal
+                </button>
+                <button type="button" id="confirm-photo-upload-btn" class="flex-1 modern-btn text-white font-semibold py-3 px-6 rounded-xl flex items-center justify-center">
+                    <span id="photo-upload-btn-text">Upload</span>
+                    <div id="photo-upload-spinner" class="spinner ml-2 hidden"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, onSnapshot, query, doc, setDoc, getDoc, updateDoc, arrayUnion, arrayRemove, where, getDocs, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Initialize Firebase
+        const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const currentFirebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+
+        // Log the config being used for debugging
+        console.log("App ID yang digunakan:", currentAppId);
+        console.log("Firebase Config yang digunakan:", currentFirebaseConfig);
+
+        // Explicitly use the user's provided config for testing, if it's different from __firebase_config
+        const userProvidedFirebaseConfig = {
+            apiKey: "AIzaSyCU1cQlzZ6AJI7UAfMsjEmb2mTe15KG9cQ",
+            authDomain: "class-schedule-f7cea.firebaseapp.com",
+            databaseURL: "https://class-schedule-f7cea-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "class-schedule-f7cea",
+            storageBucket: "class-schedule-f7cea.firebasestorage.app",
+            messagingSenderId: "192764707551",
+            appId: "1:192764707551:web:051bb288069e895c4b1f6a",
+            measurementId: "G-RF6ZMC9L7F"
+        };
+        
+        // Prioritize __firebase_config if it's available and not empty, otherwise use the hardcoded one.
+        const effectiveFirebaseConfig = Object.keys(currentFirebaseConfig).length > 0 ? currentFirebaseConfig : userProvidedFirebaseConfig;
+
+        console.log("Effective Firebase Config (yang akan diinisialisasi):", effectiveFirebaseConfig);
+
+        const app = initializeApp(effectiveFirebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const googleProvider = new GoogleAuthProvider(); // Initialize Google Auth Provider
+
+        let userId = null; // Will store the authenticated user ID
+        let currentUserProfile = null; // Stores current user's profile data
+        let homeworks = []; // Local array to hold active homework data
+        let completedHomeworks = []; // Local array to hold completed homework data
+        let unsubscribeHomeworks = null; // To store the unsubscribe function for active homeworks Firestore listener
+        let unsubscribeCompletedHomeworks = null; // To store the unsubscribe function for completed homeworks Firestore listener
+        let lastNotifiedScheduleItem = { dayIndex: -1, subjectIndex: -1 }; // To prevent duplicate class notifications
+
+        // --- Schedule Data for Multiple Classes ---
+        const allScheduleData = {
+            '12-1 (A1)': {
+                display: '12-1 (A1)',
+                data: [
+                    {
+                        day: 'Senin',
+                        subjects: [
+                            { time: '07:45 - 09:15', name: 'Kimia', color: 'bg-red-200 dark:bg-red-800', textColor: 'text-red-800 dark:text-red-100' },
+                            { time: '09:15 - 11:45', name: 'Matematika TL', color: 'bg-blue-200 dark:bg-blue-800', textColor: 'text-blue-800 dark:text-blue-100' },
+                            { time: '11:45 - 13:15', name: 'Prakarya', color: 'bg-green-200 dark:bg-green-800', textColor: 'text-green-800 dark:text-green-100' },
+                            { time: '13:55 - 15:15', name: 'Seni Budaya', color: 'bg-yellow-200 dark:bg-yellow-800', textColor: 'text-yellow-800 dark:text-yellow-100' }
+                        ]
+                    },
+                    {
+                        day: 'Selasa',
+                        subjects: [
+                            { time: '07:45 - 09:15', name: 'Fisika', color: 'bg-indigo-200 dark:bg-indigo-800', textColor: 'text-indigo-800 dark:text-indigo-100' },
+                            { time: '09:15 - 11:00', name: 'Biologi', color: 'bg-teal-200 dark:bg-teal-800', textColor: 'text-teal-800 dark:text-teal-100' },
+                            { time: '11:00 - 12:30', name: 'Bahasa Inggris', color: 'bg-pink-200 dark:bg-pink-800', textColor: 'text-pink-800 dark:text-pink-100' },
+                            { time: '13:15 - 14:35', name: 'Matematika TL', color: 'bg-blue-200 dark:bg-blue-800', textColor: 'text-blue-800 dark:text-blue-100' }
+                        ]
+                    },
+                    {
+                        day: 'Rabu',
+                        subjects: [
+                            { time: '07:45 - 09:15', name: 'Biologi', color: 'bg-teal-200 dark:bg-teal-800', textColor: 'text-teal-800 dark:text-teal-100' },
+                            { time: '09:15 - 11:45', name: 'Kimia', color: 'bg-red-200 dark:bg-red-800', textColor: 'text-red-800 dark:text-red-100' },
+                            { time: '11:45 - 12:30', name: 'BK', color: 'bg-gray-200 dark:bg-gray-600', textColor: 'text-gray-800 dark:text-gray-100' },
+                            { time: '13:15 - 14:35', name: 'PJOK', color: 'bg-orange-200 dark:bg-orange-800', textColor: 'text-orange-800 dark:text-orange-100' }
+                        ]
+                    },
+                    {
+                        day: 'Kamis',
+                        subjects: [
+                            { time: '07:45 - 09:15', name: 'Bahasa Indonesia', color: 'bg-purple-200 dark:bg-purple-800', textColor: 'text-purple-800 dark:text-purple-100' },
+                            { time: '09:15 - 10:00', name: 'PPKn', color: 'bg-lime-200 dark:bg-lime-800', textColor: 'text-lime-800 dark:text-lime-100' },
+                            { time: '10:15 - 11:45', name: 'MJ', color: 'bg-cyan-200 dark:bg-cyan-800', textColor: 'text-cyan-800 dark:text-cyan-100' },
+                            { time: '11:45 - 13:15', name: 'Matematika', color: 'bg-sky-200 dark:bg-sky-800', textColor: 'text-sky-800 dark:text-sky-100' },
+                            { time: '13:55 - 15:15', name: 'Sejarah', color: 'bg-amber-200 dark:bg-amber-800', textColor: 'text-amber-800 dark:text-amber-100' }
+                        ]
+                    },
+                    {
+                        day: 'Jumat',
+                        subjects: [
+                            { time: '07:00 - 08:30', name: 'Fisika', color: 'bg-indigo-200 dark:bg-indigo-800', textColor: 'text-indigo-800 dark:text-indigo-100' },
+                            { time: '09:15 - 11:00', name: 'PAI', color: 'bg-emerald-200 dark:bg-emerald-800', textColor: 'text-emerald-800 dark:text-emerald-100' },
+                            { time: '11:00 - 12:30', name: 'Bahasa Indonesia', color: 'bg-purple-200 dark:bg-purple-800', textColor: 'text-purple-800 dark:text-purple-100' },
+                            { time: '13:15 - 14:35', name: 'Matematika', color: 'bg-sky-200 dark:bg-sky-800', textColor: 'text-sky-800 dark:text-sky-100' }
+                        ]
+                    }
+                ]
+            },
+            '12-9 (D1)': {
+                display: '12-9 (D1)',
+                data: [
+                    {
+                        day: 'Senin',
+                        subjects: [
+                            { time: '07:00 - 07:45', name: 'Se', color: 'bg-gray-200 dark:bg-gray-600', textColor: 'text-gray-800 dark:text-gray-100' },
+                            { time: '07:45 - 08:30', name: 'Eko', color: 'bg-green-200 dark:bg-green-800', textColor: 'text-green-800 dark:text-green-100' },
+                            { time: '08:30 - 09:15', name: 'BigTL', color: 'bg-blue-200 dark:bg-blue-800', textColor: 'text-blue-800 dark:text-blue-100' },
+                            { time: '09:15 - 10:00', name: 'Geo', color: 'bg-yellow-200 dark:bg-yellow-800', textColor: 'text-yellow-800 dark:text-yellow-100' },
+                            { time: '10:15 - 11:00', name: 'PJO', color: 'bg-orange-200 dark:bg-orange-800', textColor: 'text-orange-800 dark:text-orange-100' },
+                            { time: '11:00 - 11:45', name: 'Sos', color: 'bg-pink-200 dark:bg-pink-800', textColor: 'text-pink-800 dark:text-pink-100' },
+                            { time: '11:45 - 12:30', name: 'MAT', color: 'bg-sky-200 dark:bg-sky-800', textColor: 'text-sky-800 dark:text-sky-100' },
+                        ]
+                    },
+                    {
+                        day: 'Selasa',
+                        subjects: [
+                            { time: '07:00 - 07:45', name: 'Se', color: 'bg-gray-200 dark:bg-gray-600', textColor: 'text-gray-800 dark:text-gray-100' },
+                            { time: '07:45 - 08:30', name: 'Eko', color: 'bg-green-200 dark:bg-green-800', textColor: 'text-green-800 dark:text-green-100' },
+                            { time: '08:30 - 09:15', name: 'BigTL', color: 'bg-blue-200 dark:bg-blue-800', textColor: 'text-blue-800 dark:text-blue-100' },
+                            { time: '09:15 - 10:00', name: 'Bin', color: 'bg-purple-200 dark:bg-purple-800', textColor: 'text-purple-800 dark:text-purple-100' },
+                            { time: '10:15 - 11:00', name: 'Sos', color: 'bg-pink-200 dark:bg-pink-800', textColor: 'text-pink-800 dark:text-pink-100' },
+                            { time: '11:00 - 11:45', name: 'MAT', color: 'bg-sky-200 dark:bg-sky-800', textColor: 'text-sky-800 dark:text-sky-100' },
+                            { time: '11:45 - 12:30', name: 'PJO', color: 'bg-orange-200 dark:bg-orange-800', textColor: 'text-orange-800 dark:text-orange-100' },
+                        ]
+                    },
+                    {
+                        day: 'Rabu',
+                        subjects: [
+                            { time: '07:00 - 07:45', name: 'Ra', color: 'bg-gray-200 dark:bg-gray-600', textColor: 'text-gray-800 dark:text-gray-100' },
+                            { time: '07:45 - 08:30', name: 'PAI', color: 'bg-emerald-200 dark:bg-emerald-800', textColor: 'text-emerald-800 dark:text-emerald-100' },
+                            { time: '08:30 - 09:15', name: 'Sos', color: 'bg-pink-200 dark:bg-pink-800', textColor: 'text-pink-800 dark:text-pink-100' },
+                            { time: '09:15 - 10:00', name: 'Sjr', color: 'bg-amber-200 dark:bg-amber-800', textColor: 'text-amber-800 dark:text-amber-100' },
+                            { time: '10:15 - 11:00', name: 'MJ', color: 'bg-cyan-200 dark:bg-cyan-800', textColor: 'text-cyan-800 dark:text-cyan-100' },
+                        ]
+                    },
+                    {
+                        day: 'Kamis',
+                        subjects: [
+                            { time: '07:00 - 07:45', name: 'Ka', color: 'bg-gray-200 dark:bg-gray-600', textColor: 'text-gray-800 dark:text-gray-100' },
+                            { time: '07:45 - 08:30', name: 'Bin', color: 'bg-purple-200 dark:bg-purple-800', textColor: 'text-purple-800 dark:text-purple-100' },
+                            { time: '08:30 - 09:15', name: 'Geo', color: 'bg-yellow-200 dark:bg-yellow-800', textColor: 'text-yellow-800 dark:text-yellow-100' },
+                            { time: '09:15 - 10:00', name: 'BK', color: 'bg-gray-200 dark:bg-gray-600', textColor: 'text-gray-800 dark:text-gray-100' },
+                            { time: '10:15 - 11:00', name: 'Eko', color: 'bg-green-200 dark:bg-green-800', textColor: 'text-green-800 dark:text-green-100' },
+                            { time: '11:00 - 11:45', name: 'MAT', color: 'bg-sky-200 dark:bg-sky-800', textColor: 'text-sky-800 dark:text-sky-100' },
+                        ]
+                    },
+                    {
+                        day: 'Jumat',
+                        subjects: [
+                            { time: '07:00 - 07:45', name: 'Ju', color: 'bg-gray-200 dark:bg-gray-600', textColor: 'text-gray-800 dark:text-gray-100' },
+                            { time: '07:45 - 08:30', name: 'PP', color: 'bg-lime-200 dark:bg-lime-800', textColor: 'text-lime-800 dark:text-lime-100' },
+                            { time: '08:30 - 09:15', name: 'PK', color: 'bg-cyan-200 dark:bg-cyan-800', textColor: 'text-cyan-800 dark:text-cyan-100' },
+                            { time: '09:15 - 10:00', name: 'SB', color: 'bg-yellow-200 dark:bg-yellow-800', textColor: 'text-yellow-800 dark:text-yellow-100' },
+                            { time: '10:15 - 11:00', name: 'Big', color: 'bg-indigo-200 dark:bg-indigo-800', textColor: 'text-indigo-800 dark:text-indigo-100' },
+                        ]
+                    }
+                ]
+            }
+        };
+
+        let currentDayIndex = new Date().getDay() - 1; // 0 for Monday, 4 for Friday
+        if (currentDayIndex < 0 || currentDayIndex > 4) {
+            currentDayIndex = 0; // Default to Monday if it's weekend or invalid day
+        }
+
+        let currentScheduleData = allScheduleData['12-1 (A1)'].data; // Default schedule
+        let currentClassName = '12-1 (A1)'; // Default class name
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const scheduleContainer = document.getElementById('schedule-container');
+            const dayTitle = document.getElementById('current-day-title');
+            const prevDayBtn = document.getElementById('prev-day');
+            const nextDayBtn = document.getElementById('next-day');
+            
+            // PR elements
+            const prList = document.getElementById('pr-list');
+            const noPrMessage = document.getElementById('no-pr-message');
+            const loadingPrMessage = document.getElementById('loading-pr');
+            const loginPromptMessage = document.getElementById('login-prompt-message'); 
+            const addPrBtn = document.getElementById('add-pr-btn');
+            const prModal = document.getElementById('pr-modal');
+            const prForm = document.getElementById('pr-form');
+            const cancelPrBtn = document.getElementById('cancel-pr-btn');
+            const savePrBtn = document.getElementById('save-pr-btn');
+            const prDescInput = document.getElementById('pr-desc');
+            const prDueDateInput = document.getElementById('pr-due-date'); 
+            const prFileInput = document.getElementById('pr-file'); 
+            const userIdDisplay = document.getElementById('user-id-display'); 
+            const imageOverlay = document.getElementById('image-overlay');
+            const overlayImage = document.getElementById('overlay-image');
+
+            // Auth elements
+            const authBtn = document.getElementById('auth-btn'); 
+            const logoutBtn = document.getElementById('logout-btn'); 
+            const authModal = document.getElementById('auth-modal'); 
+            const authModalTitle = document.getElementById('auth-modal-title'); 
+            const authForm = document.getElementById('auth-form'); 
+            const authEmailInput = document.getElementById('auth-email'); 
+            const authPasswordInput = document.getElementById('auth-password'); 
+            const authSubmitBtn = document.getElementById('auth-submit-btn'); 
+            const cancelAuthBtn = document.getElementById('cancel-auth-btn'); 
+            const toggleAuthModeBtn = document.getElementById('toggle-auth-mode'); 
+            const authErrorMessage = document.getElementById('auth-error-message'); 
+            const googleLoginBtn = document.getElementById('google-login-btn'); 
+
+            // LLM elements
+            const llmResponseModal = document.getElementById('llm-response-modal');
+            const closeLlmModalBtn = document.getElementById('close-llm-modal-btn');
+            const llmResponseContent = document.getElementById('llm-response-content');
+            const llmLoadingSpinner = document.getElementById('llm-loading-spinner');
+            const llmResponseText = document.getElementById('llm-response-text');
+            const llmModalTitle = document.getElementById('llm-modal-title');
+
+            // Navigation elements
+            const hamburgerMenu = document.getElementById('hamburger-menu');
+            const sidebar = document.getElementById('sidebar');
+            const closeSidebarBtn = document.getElementById('close-sidebar');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const navJadwal = document.getElementById('nav-jadwal');
+            const navPr = document.getElementById('nav-pr');
+            const navHistoryPr = document.getElementById('nav-history-pr'); // New nav item
+            const navProfile = document.getElementById('nav-profile'); // New nav item
+            const navFriends = document.getElementById('nav-friends'); // New nav item
+
+            const jadwalSection = document.getElementById('jadwal-section');
+            const prSection = document.getElementById('pr-section');
+            const historyPrSection = document.getElementById('history-pr-section'); // New section
+            const historyPrList = document.getElementById('history-pr-list'); // New list
+            const noHistoryPrMessage = document.getElementById('no-history-pr-message'); // New message
+            const loadingHistoryPr = document.getElementById('loading-history-pr'); // New loading
+
+            const profileSection = document.getElementById('profile-section'); // New section
+            const profileAvatar = document.getElementById('profile-avatar');
+            const profileNameInput = document.getElementById('profile-name-input'); // New input for name
+            const profileBioInput = document.getElementById('profile-bio-input'); // New input for bio
+            const saveProfileBtn = document.getElementById('save-profile-btn'); // New save button
+            const editAvatarBtn = document.getElementById('edit-avatar-btn'); // New button for avatar upload
+            const profileEmail = document.getElementById('profile-email');
+            const profileClass = document.getElementById('profile-class');
+            const followerCount = document.getElementById('follower-count');
+            const followingCount = document.getElementById('following-count');
+            const profilePhotos = document.getElementById('profile-photos');
+            const noPhotosMessage = document.getElementById('no-photos-message');
+            const uploadProfilePhotoBtn = document.getElementById('upload-profile-photo-btn');
+            const profilePrList = document.getElementById('profile-pr-list');
+            const noProfilePrMessage = document.getElementById('no-profile-pr-message');
+
+            const friendsSection = document.getElementById('friends-section'); // New section
+            const profileLink = document.getElementById('profile-link');
+            const copyProfileLinkBtn = document.getElementById('copy-profile-link-btn');
+            const friendLinkInput = document.getElementById('friend-link-input');
+            const addFriendBtn = document.getElementById('add-friend-btn');
+            const friendsList = document.getElementById('friends-list');
+            const noFriendsMessage = document.getElementById('no-friends-message');
+            const loadingFriends = document.getElementById('loading-friends');
+            const shareProfileBtn = document.getElementById('share-profile-btn');
+
+            const otherProfileModal = document.getElementById('other-profile-modal'); // New modal
+            const closeOtherProfileModalBtn = document.getElementById('close-other-profile-modal-btn');
+            const otherProfileAvatar = document.getElementById('other-profile-avatar');
+            const otherProfileName = document.getElementById('other-profile-name');
+            const otherProfileEmail = document.getElementById('other-profile-email');
+            const otherProfileClass = document.getElementById('other-profile-class');
+            const otherFollowerCount = document.getElementById('other-follower-count');
+            const otherFollowingCount = document.getElementById('other-following-count');
+            const followUnfollowBtn = document.getElementById('follow-unfollow-btn');
+            const otherProfilePhotos = document.getElementById('other-profile-photos');
+            const noOtherPhotosMessage = document.getElementById('no-other-photos-message');
+            const otherProfilePrList = document.getElementById('other-profile-pr-list');
+            const noOtherProfilePrMessage = document.getElementById('no-other-profile-pr-message');
+
+            const photoDetailModal = document.getElementById('photo-detail-modal'); // New modal for photo details, likes, comments
+            const closePhotoDetailModalBtn = document.getElementById('close-photo-detail-modal-btn');
+            const detailPhotoImg = document.getElementById('detail-photo-img');
+            const likeBtn = document.getElementById('like-btn');
+            const likeCount = document.getElementById('like-count');
+            const commentCount = document.getElementById('comment-count');
+            const commentsList = document.getElementById('comments-list');
+            const noCommentsMessage = document.getElementById('no-comments-message');
+            const commentForm = document.getElementById('comment-form');
+            const commentInput = document.getElementById('comment-input');
+            const likedByList = document.getElementById('liked-by-list'); // New element to show who liked
+            const likedByUl = document.getElementById('liked-by-ul'); // UL for liked by users
+
+            const classSelect = document.getElementById('class-select'); // For schedule section
+            const currentClassDisplay = document.getElementById('current-class-display');
+            const initialClassSelect = document.getElementById('initial-class-select'); // For class selection modal
+            const classSelectionModal = document.getElementById('class-selection-modal');
+            const saveClassSelectionBtn = document.getElementById('save-class-selection-btn');
+
+            // Photo Upload Modal elements
+            const photoUploadModal = document.getElementById('photo-upload-modal');
+            const photoUploadPreview = document.getElementById('photo-upload-preview');
+            const photoUploadInput = document.getElementById('photo-upload-input');
+            const photoUploadError = document.getElementById('photo-upload-error');
+            const cancelPhotoUploadBtn = document.getElementById('cancel-photo-upload-btn');
+            const confirmPhotoUploadBtn = document.getElementById('confirm-photo-upload-btn');
+            const photoUploadBtnText = document.getElementById('photo-upload-btn-text');
+            const photoUploadSpinner = document.getElementById('photo-upload-spinner');
+
+
+            let isLoginMode = true; // true for login, false for register
+            let currentViewedPhotoId = null; // To store the ID of the photo being viewed in detail modal
+            let currentViewedPhotoUserId = null; // To store the user ID of the photo being viewed
+
+            // --- Schedule Class Selection Logic ---
+            function populateClassSelects() {
+                classSelect.innerHTML = '';
+                initialClassSelect.innerHTML = '';
+                for (const className in allScheduleData) {
+                    const option = document.createElement('option');
+                    option.value = className;
+                    option.textContent = allScheduleData[className].display;
+                    classSelect.appendChild(option);
+
+                    const initialOption = option.cloneNode(true);
+                    initialClassSelect.appendChild(initialOption);
+                }
+            }
+
+            function updateScheduleDisplay(className) {
+                currentClassName = className;
+                currentScheduleData = allScheduleData[className].data;
+                currentClassDisplay.textContent = `Kelas: ${className}`;
+                // Reset container and re-render to avoid mixing schedules
+                const maxIndex = currentScheduleData.length - 1;
+                if (currentDayIndex < 0 || currentDayIndex > maxIndex) {
+                    currentDayIndex = 0;
+                }
+                const scheduleContainer = document.getElementById('schedule-container');
+                if (scheduleContainer) {
+                    scheduleContainer.innerHTML = '';
+                }
+                updateDisplay();
+                // Set the selected option in the classSelect dropdown
+                classSelect.value = className;
+            }
+
+            classSelect.addEventListener('change', (e) => {
+                updateScheduleDisplay(e.target.value);
+            });
+
+            // --- Enhanced Notification System ---
+            let notificationPermission = false;
+
+            async function requestNotificationPermission() {
+                if (!("Notification" in window)) {
+                    console.log("Browser ini tidak mendukung notifikasi desktop.");
+                    showToast("⚠️ Browser tidak mendukung notifikasi", "warning");
+                    return false;
+                }
+                
+                try {
+                    const permission = await Notification.requestPermission();
+                    if (permission === "granted") {
+                        console.log("Izin notifikasi diberikan.");
+                        notificationPermission = true;
+                        showToast("🔔 Notifikasi diaktifkan!", "success");
+                        return true;
+                    } else {
+                        console.warn("Izin notifikasi ditolak.");
+                        showToast("🔕 Notifikasi diblokir", "warning");
+                        return false;
+                    }
+                } catch (error) {
+                    console.error("Error requesting notification permission:", error);
+                    return false;
+                }
+            }
+
+            function showNotification(title, body, iconUrl = 'https://placehold.co/48x48/667eea/FFFFFF?text=🔔') {
+                if (Notification.permission === "granted") {
+                    const notification = new Notification(title, { 
+                        body: body, 
+                        icon: iconUrl,
+                        badge: iconUrl,
+                        vibrate: [200, 100, 200],
+                        requireInteraction: false,
+                        tag: 'app-notification'
+                    });
+                    
+                    // Auto close after 5 seconds
+                    setTimeout(() => {
+                        notification.close();
+                    }, 5000);
+                } else {
+                    // Fallback to in-app toast notification
+                    showToast(`${title}: ${body}`, "info");
+                }
+            }
+
+            // Toast notification system for in-app notifications
+            function showToast(message, type = "info") {
+                const toast = document.createElement('div');
+                toast.className = `fixed top-4 right-4 z-[9999] px-6 py-3 rounded-xl shadow-lg text-white font-semibold transform translate-x-full transition-transform duration-300 max-w-sm`;
+                
+                // Set color based on type
+                switch(type) {
+                    case 'success':
+                        toast.classList.add('bg-green-500');
+                        break;
+                    case 'warning':
+                        toast.classList.add('bg-yellow-500');
+                        break;
+                    case 'error':
+                        toast.classList.add('bg-red-500');
+                        break;
+                    default:
+                        toast.classList.add('bg-blue-500');
+                }
+                
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                
+                // Animate in
+                setTimeout(() => {
+                    toast.classList.remove('translate-x-full');
+                }, 100);
+                
+                // Animate out and remove
+                setTimeout(() => {
+                    toast.classList.add('translate-x-full');
+                    setTimeout(() => {
+                        if (toast.parentNode) {
+                            toast.parentNode.removeChild(toast);
+                        }
+                    }, 300);
+                }, 4000);
+            }
+
+            // --- Class Schedule Notification Logic ---
+            function checkClassScheduleForNotifications() {
+                const now = new Date();
+                const currentDay = now.getDay(); // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
+                const currentHour = now.getHours();
+                const currentMinute = now.getMinutes();
+
+                const todayScheduleIndex = currentDay === 0 || currentDay === 6 ? -1 : currentDay - 1;
+
+                if (todayScheduleIndex === -1 || !currentScheduleData) {
+                    return;
+                }
+
+                const todaySchedule = currentScheduleData[todayScheduleIndex];
+                if (!todaySchedule) return;
+
+                todaySchedule.subjects.forEach((subject, index) => {
+                    const [startHour, startMinute] = subject.time.split(' - ')[0].split(':').map(Number);
+                    
+                    // Check if current time is within 1 minute of class start and not already notified
+                    if (currentHour === startHour && currentMinute === startMinute && 
+                        (lastNotifiedScheduleItem.dayIndex !== todayScheduleIndex || lastNotifiedScheduleItem.subjectIndex !== index)) {
+                        
+                        showNotification(`⏰ Jam Pelajaran Baru!`, `Sekarang waktunya ${subject.name}!`);
+                        lastNotifiedScheduleItem = { dayIndex: todayScheduleIndex, subjectIndex: index };
+                        console.log(`Notifikasi: Jam pelajaran ${subject.name} dimulai.`);
+                    }
+                });
+            }
+
+            // --- Homework Deadline Notification Logic ---
+            function checkHomeworkDeadlines() {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+
+                homeworks.forEach(pr => {
+                    if (pr.dueDate) {
+                        const dueDate = new Date(pr.dueDate);
+                        dueDate.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+
+                        const diffTime = dueDate.getTime() - today.getTime();
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                        const notificationKey = `notified_pr_${pr.id}_${pr.dueDate}`;
+
+                        if (diffDays === 1 && !localStorage.getItem(notificationKey)) {
+                            showNotification(`⚠️ Deadline PR Besok!`, `PR: "${pr.description}" deadlinenya besok!`);
+                            localStorage.setItem(notificationKey, 'true'); 
+                            console.log(`Notifikasi: Deadline PR "${pr.description}" besok.`);
+                        }
+                        // Clear notification flag if deadline passed or far away
+                        if (diffDays <= 0 || diffDays > 1) {
+                            localStorage.removeItem(notificationKey);
+                        }
+                    }
+                });
+            }
+
+
+            // Function to handle file clicks (view image or download document)
+            window.handleFileClick = (fileUrl, fileType, fileName) => {
+                if (fileType && fileType.startsWith('image/')) {
+                    if (overlayImage && imageOverlay) {
+                        overlayImage.src = fileUrl;
+                        imageOverlay.classList.remove('hidden');
+                    } else {
+                        console.error("Overlay elements not found for image display.");
+                    }
+                } else {
+                    const a = document.createElement('a');
+                    a.href = fileUrl;
+                    a.download = fileName || 'document';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+            };
+
+            if (imageOverlay) {
+                imageOverlay.addEventListener('click', () => {
+                    imageOverlay.classList.add('hidden');
+                });
+            } else {
+                console.error("Element with ID 'image-overlay' not found. Cannot attach click listener.");
+            }
+
+            // Firebase Authentication and Data Loading
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    console.log("Firebase authenticated. User ID:", userId);
+                    await fetchUserProfile(userId); // Fetch current user's profile
+                    
+                    // If user's class is not set, show class selection modal
+                    if (!currentUserProfile || !currentUserProfile.className) {
+                        classSelectionModal.classList.remove('hidden');
+                    } else {
+                        updateScheduleDisplay(currentUserProfile.className);
+                    }
+
+                    userIdDisplay.textContent = `User ID: ${user.email || user.uid}`;
+                    authBtn.classList.add('hidden');
+                    logoutBtn.classList.remove('hidden');
+                    addPrBtn.classList.remove('hidden');
+                    loginPromptMessage.classList.add('hidden');
+                    listenForHomeworks(); // Start listening for active homeworks
+                    listenForCompletedHomeworks(); // Start listening for completed homeworks
+                } else {
+                    userId = null;
+                    currentUserProfile = null;
+                    userIdDisplay.textContent = 'Belum login';
+                    authBtn.classList.remove('hidden');
+                    logoutBtn.classList.add('hidden');
+                    addPrBtn.classList.add('hidden');
+                    loginPromptMessage.classList.remove('hidden');
+                    prList.innerHTML = ''; 
+                    noPrMessage.classList.remove('hidden'); 
+                    loadingPrMessage.classList.add('hidden'); 
+                    historyPrList.innerHTML = '';
+                    noHistoryPrMessage.classList.remove('hidden');
+                    loadingHistoryPr.classList.add('hidden');
+                    if (unsubscribeHomeworks) {
+                        unsubscribeHomeworks(); 
+                    }
+                    if (unsubscribeCompletedHomeworks) {
+                        unsubscribeCompletedHomeworks();
+                    }
+                    console.log("User logged out or not authenticated.");
+                }
+            });
+
+            // --- Image Processing Helpers ---
+            function convertFileToBase64(file) {
+                return new Promise((resolve, reject) => {
+                    if (!file) {
+                        resolve(null);
+                        return;
+                    }
+                    
+                    // Check file size (limit to 2MB for better performance)
+                    if (file.size > 2 * 1024 * 1024) {
+                        reject(new Error('File size too large. Please choose an image smaller than 2MB.'));
+                        return;
+                    }
+                    
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function compressImage(file, maxWidth = 800, quality = 0.8) {
+                return new Promise((resolve) => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const img = new Image();
+                    
+                    img.onload = () => {
+                        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+                        canvas.width = img.width * ratio;
+                        canvas.height = img.height * ratio;
+                        
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        canvas.toBlob(resolve, 'image/jpeg', quality);
+                    };
+                    
+                    img.src = URL.createObjectURL(file);
+                });
+            }
+
+
+            // --- User Profile Management ---
+            async function fetchUserProfile(uid) {
+                const userDocRef = doc(db, `artifacts/${currentAppId}/users/${uid}/profile/data`);
+                const publicProfileDocRef = doc(db, `artifacts/${currentAppId}/public_profiles/${uid}`); // New public profile ref
+                try {
+                    const docSnap = await getDoc(userDocRef);
+                    if (docSnap.exists()) {
+                        currentUserProfile = docSnap.data();
+                        console.log("User profile loaded:", currentUserProfile);
+                    } else {
+                        // Create a basic profile if it doesn't exist
+                        currentUserProfile = {
+                            email: auth.currentUser.email,
+                            name: auth.currentUser.displayName || auth.currentUser.email.split('@')[0],
+                            bio: '',
+                            avatarUrl: 'https://placehold.co/96x96/cccccc/333333?text=Avatar',
+                            className: null,
+                            photos: [],
+                            followers: [],
+                            following: []
+                        };
+                        await setDoc(userDocRef, currentUserProfile);
+                        console.log("New user profile created.");
+                    }
+                    // Always update public profile when fetching/creating main profile
+                    await updatePublicProfile(uid, currentUserProfile);
+                    updateProfileUI();
+                } catch (error) {
+                    console.error("Error fetching or creating user profile:", error);
+                }
+            }
+
+            async function updatePublicProfile(uid, profileData) {
+                const publicProfileDocRef = doc(db, `artifacts/${currentAppId}/public_profiles/${uid}`);
+                const publicData = {
+                    name: profileData.name || profileData.email.split('@')[0],
+                    email: profileData.email,
+                    avatarUrl: profileData.avatarUrl,
+                    className: profileData.className || null,
+                    lastUpdated: Date.now()
+                };
+                try {
+                    await setDoc(publicProfileDocRef, publicData, { merge: true });
+                    console.log("Public profile updated.");
+                } catch (error) {
+                    console.error("Error updating public profile:", error);
+                }
+            }
+
+            async function updateProfileUI() {
+                if (currentUserProfile) {
+                    profileAvatar.src = currentUserProfile.avatarUrl || 'https://placehold.co/96x96/cccccc/333333?text=Avatar';
+                    profileNameInput.value = currentUserProfile.name || '';
+                    profileBioInput.value = currentUserProfile.bio || '';
+                    profileEmail.textContent = currentUserProfile.email || 'email@example.com';
+                    profileClass.textContent = `Kelas: ${currentUserProfile.className || 'Belum Dipilih'}`;
+                    followerCount.textContent = currentUserProfile.followers ? currentUserProfile.followers.length : 0;
+                    followingCount.textContent = currentUserProfile.following ? currentUserProfile.following.length : 0;
+                    renderProfilePhotos(profilePhotos, currentUserProfile.photos, true);
+                    renderProfilePRs(profilePrList, homeworks, true);
+                }
+            }
+
+            async function updateRemoteUserProfile(data) {
+                if (!userId) return;
+                const userDocRef = doc(db, `artifacts/${currentAppId}/users/${userId}/profile/data`);
+                try {
+                    await updateDoc(userDocRef, data);
+                    console.log("User profile updated remotely.");
+                    // Also update public profile
+                    await updatePublicProfile(userId, { ...currentUserProfile, ...data });
+                    // Re-fetch profile to ensure UI is consistent
+                    await fetchUserProfile(userId);
+                } catch (error) {
+                    console.error("Error updating user profile:", error);
+                }
+            }
+
+            // --- Homeworks (Active) ---
+            function listenForHomeworks() {
+                if (!userId) {
+                    console.warn("User ID not available for listening to homeworks.");
+                    return;
+                }
+
+                if (unsubscribeHomeworks) {
+                    unsubscribeHomeworks();
+                }
+
+                loadingPrMessage.classList.remove('hidden'); 
+                noPrMessage.classList.add('hidden'); 
+                const homeworksCollectionRef = collection(db, `artifacts/${currentAppId}/users/${userId}/homeworks`);
+                const q = query(homeworksCollectionRef, where("completed", "!=", true)); 
+                
+                unsubscribeHomeworks = onSnapshot(q, (snapshot) => {
+                    homeworks = [];
+                    snapshot.forEach(doc => {
+                        homeworks.push({ id: doc.id, ...doc.data() });
+                    });
+                    homeworks.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                    renderPRs();
+                    loadingPrMessage.classList.add('hidden'); 
+                    if (homeworks.length === 0) {
+                        prList.appendChild(noPrMessage); 
+                        noPrMessage.classList.remove('hidden');
+                    } else {
+                        noPrMessage.classList.add('hidden');
+                    }
+                    checkHomeworkDeadlines(); 
+                    updateProfileUI(); 
+                }, (error) => {
+                    console.error("Error fetching active homeworks:", error);
+                    loadingPrMessage.classList.add('hidden'); 
+                });
+            }
+
+            // --- Homeworks (Completed) ---
+            function listenForCompletedHomeworks() {
+                if (!userId) {
+                    console.warn("User ID not available for listening to completed homeworks.");
+                    return;
+                }
+
+                if (unsubscribeCompletedHomeworks) {
+                    unsubscribeCompletedHomeworks();
+                }
+
+                loadingHistoryPr.classList.remove('hidden');
+                noHistoryPrMessage.classList.add('hidden');
+                const completedHomeworksCollectionRef = collection(db, `artifacts/${currentAppId}/users/${userId}/homeworks`);
+                const q = query(completedHomeworksCollectionRef, where("completed", "==", true)); 
+
+                unsubscribeCompletedHomeworks = onSnapshot(q, (snapshot) => {
+                    completedHomeworks = [];
+                    snapshot.forEach(doc => {
+                        completedHomeworks.push({ id: doc.id, ...doc.data() });
+                    });
+                    completedHomeworks.sort((a, b) => (b.completedTimestamp || 0) - (a.completedTimestamp || 0)); 
+                    renderHistoryPRs();
+                    loadingHistoryPr.classList.add('hidden');
+                    if (completedHomeworks.length === 0) {
+                        historyPrList.appendChild(noHistoryPrMessage);
+                        noHistoryPrMessage.classList.remove('hidden');
+                    } else {
+                        noHistoryPrMessage.classList.add('hidden');
+                    }
+                }, (error) => {
+                    console.error("Error fetching completed homeworks:", error);
+                    loadingHistoryPr.classList.add('hidden');
+                });
+            }
+
+            // --- Render Functions ---
+            function renderSchedules() {
+                const day = currentScheduleData[currentDayIndex];
+                const dayDiv = document.createElement('div');
+                dayDiv.id = `day-${currentDayIndex}`;
+                dayDiv.className = 'day-schedule active w-full';
+
+                const subjectsHtml = day.subjects.map((subject, index) => `
+                    <div class="modern-schedule-card schedule-card flex items-center justify-between text-white">
+                        <div class="flex items-center space-x-4">
+                            <div class="w-12 h-12 rounded-xl bg-white bg-opacity-20 flex items-center justify-center">
+                                <span class="text-xl">📖</span>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg">${subject.name}</h3>
+                                <p class="text-white text-opacity-70 text-sm">${subject.time}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-4 h-4 rounded-full ${subject.color.replace('bg-', 'bg-').replace('dark:bg-', '')}"></div>
+                        </div>
+                    </div>
+                `).join('');
+
+                dayDiv.innerHTML = subjectsHtml;
+                scheduleContainer.appendChild(dayDiv);
+                
+                // Update day indicators
+                updateDayIndicators();
+            }
+
+            function updateDayIndicators() {
+                const indicators = document.querySelectorAll('.day-indicator');
+                indicators.forEach((indicator, index) => {
+                    if (index === currentDayIndex) {
+                        indicator.className = 'day-indicator w-2 h-2 rounded-full bg-white transition-all duration-300';
+                    } else {
+                        indicator.className = 'day-indicator w-2 h-2 rounded-full bg-white bg-opacity-30 transition-all duration-300';
+                    }
+                });
+            }
+
+            function updateDisplay() {
+                dayTitle.textContent = currentScheduleData[currentDayIndex].day;
+                scheduleContainer.innerHTML = '';
+                renderSchedules(); 
+            }
+            
+            function showDay(index, direction = 'next') {
+                const newIndex = (index + currentScheduleData.length) % currentScheduleData.length;
+                if (newIndex === currentDayIndex) return;
+                
+                const currentSchedule = scheduleContainer.querySelector('.day-schedule.active');
+                if (currentSchedule) {
+                    // Add exit animation
+                    if (direction === 'next') {
+                        currentSchedule.classList.add('slide-left-exit');
+                    } else {
+                        currentSchedule.classList.add('slide-right-exit');
+                    }
+                    currentSchedule.classList.remove('active');
+                    
+                    setTimeout(() => {
+                        currentSchedule.remove();
+                    }, 500);
+                }
+                
+                currentDayIndex = newIndex;
+                
+                // Create new schedule with enter animation
+                setTimeout(() => {
+                    const day = currentScheduleData[currentDayIndex];
+                    const dayDiv = document.createElement('div');
+                    dayDiv.id = `day-${currentDayIndex}`;
+                    dayDiv.className = `day-schedule w-full ${direction === 'next' ? 'slide-left-enter' : 'slide-right-enter'}`;
+
+                    const subjectsHtml = day.subjects.map((subject, index) => `
+                        <div class="modern-schedule-card schedule-card flex items-center justify-between text-white">
+                            <div class="flex items-center space-x-4">
+                                <div class="w-12 h-12 rounded-xl bg-white bg-opacity-20 flex items-center justify-center">
+                                    <span class="text-xl">📖</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-lg">${subject.name}</h3>
+                                    <p class="text-white text-opacity-70 text-sm">${subject.time}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-4 h-4 rounded-full ${subject.color.replace('bg-', 'bg-').replace('dark:bg-', '')}"></div>
+                            </div>
+                        </div>
+                    `).join('');
+
+                    dayDiv.innerHTML = subjectsHtml;
+                    scheduleContainer.appendChild(dayDiv);
+                    
+                    // Update day title
+                    dayTitle.textContent = day.day;
+                    updateDayIndicators();
+                    
+                    // Trigger enter animation
+                    setTimeout(() => {
+                        dayDiv.classList.remove('slide-left-enter', 'slide-right-enter');
+                        dayDiv.classList.add('active');
+                    }, 50);
+                }, 100);
+            }
+
+            prevDayBtn.addEventListener('click', () => showDay(currentDayIndex - 1, 'prev'));
+            nextDayBtn.addEventListener('click', () => showDay(currentDayIndex + 1, 'next'));
+
+            // Swipe functionality
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            scheduleContainer.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            scheduleContainer.addEventListener('touchend', (e) => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            });
+
+            function handleSwipe() {
+                if (touchEndX < touchStartX - 50) { 
+                    showDay(currentDayIndex + 1, 'next');
+                }
+                if (touchEndX > touchStartX + 50) { 
+                    showDay(currentDayIndex - 1, 'prev');
+                }
+            }
+
+
+            function renderPRs() {
+                prList.innerHTML = ''; 
+                if (homeworks.length === 0) {
+                    prList.appendChild(noPrMessage);
+                    noPrMessage.classList.remove('hidden');
+                } else {
+                    noPrMessage.classList.add('hidden');
+                    homeworks.forEach(pr => {
+                        const prItem = document.createElement('div');
+                        prItem.className = 'p-4 bg-gray-100 dark:bg-gray-700 rounded-lg flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3';
+                        
+                        let fileDisplayHtml = '';
+                        if (pr.fileUrl) { // Use pr.fileUrl instead of pr.fileDataUrl
+                            if (pr.fileType && pr.fileType.startsWith('image/')) {
+                                fileDisplayHtml = `<img src="${pr.fileUrl}" alt="PR photo" class="w-20 h-20 sm:w-16 sm:h-16 rounded-md object-cover cursor-pointer flex-shrink-0" onclick="window.handleFileClick('${pr.fileUrl}', '${pr.fileType}', '${pr.fileName}')">`;
+                            } else {
+                                fileDisplayHtml = `
+                                    <div class="flex items-center space-x-2 flex-shrink-0 cursor-pointer" onclick="window.handleFileClick('${pr.fileUrl}', '${pr.fileType}', '${pr.fileName}')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                                        </svg>
+                                        <span class="text-blue-500 hover:underline text-sm sm:text-base break-all">${pr.fileName || 'Dokumen'}</span>
+                                    </div>
+                                `;
+                            }
+                        }
+
+                        let dueDateDisplay = '';
+                        if (pr.dueDate) {
+                            const date = new Date(pr.dueDate + 'T00:00:00'); 
+                            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                            dueDateDisplay = `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Deadline: ${date.toLocaleDateString('id-ID', options)}</p>`;
+                        }
+
+                        prItem.innerHTML = `
+                            ${fileDisplayHtml}
+                            <div class="flex-grow w-full"> 
+                                <p class="font-medium text-base sm:text-lg">${pr.description}</p> 
+                                ${dueDateDisplay}
+                                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full mt-2">
+                                    <button data-description="${pr.description}" class="explain-pr-btn px-3 py-1 bg-purple-500 text-white text-sm rounded-md hover:bg-purple-600 transition-transform transform hover:scale-105 w-full sm:w-auto">
+                                        ✨ Jelaskan PR
+                                    </button>
+                                    <button data-description="${pr.description}" class="suggest-plan-btn px-3 py-1 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600 transition-transform transform hover:scale-105 w-full sm:w-auto">
+                                        ✨ Rencana Belajar
+                                    </button>
+                                </div>
+                            </div>
+                            <button data-id="${pr.id}" class="pr-done-btn flex-shrink-0 p-2 bg-green-500 text-white rounded-full hover:bg-green-600 self-end sm:self-center mt-2 sm:mt-0"> 
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                            </button>
+                        `;
+                        prList.appendChild(prItem);
+                    });
+                }
+            }
+
+            function renderHistoryPRs() {
+                historyPrList.innerHTML = '';
+                if (completedHomeworks.length === 0) {
+                    historyPrList.appendChild(noHistoryPrMessage);
+                    noHistoryPrMessage.classList.remove('hidden');
+                } else {
+                    noHistoryPrMessage.classList.add('hidden');
+                    completedHomeworks.forEach(pr => {
+                        const prItem = document.createElement('div');
+                        prItem.className = 'p-4 bg-gray-100 dark:bg-gray-700 rounded-lg flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 opacity-70'; 
+                        
+                        let fileDisplayHtml = '';
+                        if (pr.fileUrl) { // Use pr.fileUrl
+                            if (pr.fileType && pr.fileType.startsWith('image/')) {
+                                fileDisplayHtml = `<img src="${pr.fileUrl}" alt="PR photo" class="w-20 h-20 sm:w-16 sm:h-16 rounded-md object-cover cursor-pointer flex-shrink-0" onclick="window.handleFileClick('${pr.fileUrl}', '${pr.fileType}', '${pr.fileName}')">`;
+                            } else {
+                                fileDisplayHtml = `
+                                    <div class="flex items-center space-x-2 flex-shrink-0 cursor-pointer" onclick="window.handleFileClick('${pr.fileUrl}', '${pr.fileType}', '${pr.fileName}')">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 10a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1-4a1 1 0 000 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
+                                        </svg>
+                                        <span class="text-blue-500 hover:underline text-sm sm:text-base break-all">${pr.fileName || 'Dokumen'}</span>
+                                    </div>
+                                `;
+                            }
+                        }
+
+                        let dueDateDisplay = '';
+                        if (pr.dueDate) {
+                            const date = new Date(pr.dueDate + 'T00:00:00');
+                            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                            dueDateDisplay = `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Deadline: ${date.toLocaleDateString('id-ID', options)}</p>`;
+                        }
+                        let completedDateDisplay = '';
+                        if (pr.completedTimestamp) {
+                            const date = new Date(pr.completedTimestamp);
+                            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+                            completedDateDisplay = `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Selesai pada: ${date.toLocaleDateString('id-ID', options)}</p>`;
+                        }
+
+
+                        prItem.innerHTML = `
+                            ${fileDisplayHtml}
+                            <div class="flex-grow w-full"> 
+                                <p class="font-medium text-base sm:text-lg">${pr.description}</p> 
+                                ${dueDateDisplay}
+                                ${completedDateDisplay}
+                            </div>
+                            <button data-id="${pr.id}" class="pr-undo-btn flex-shrink-0 p-2 bg-yellow-500 text-white rounded-full hover:bg-yellow-600 self-end sm:self-center mt-2 sm:mt-0"> 
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            </button>
+                        `;
+                        historyPrList.appendChild(prItem);
+                    });
+                }
+            }
+
+            function renderProfilePhotos(container, photosArray, isCurrentUser) {
+                container.innerHTML = '';
+                
+                if (!photosArray || photosArray.length === 0) {
+                    (isCurrentUser ? noPhotosMessage : noOtherPhotosMessage).classList.remove('hidden');
+                } else {
+                    (isCurrentUser ? noPhotosMessage : noOtherPhotosMessage).classList.add('hidden');
+                    
+                    // Update post count
+                    if (isCurrentUser) {
+                        const postCountElement = document.getElementById('post-count');
+                        if (postCountElement) {
+                            postCountElement.textContent = photosArray.length;
+                        }
+                    }
+                    
+                    photosArray.forEach((photo, index) => {
+                        const postDiv = document.createElement('div');
+                        postDiv.className = 'instagram-post profile-grid-item';
+                        postDiv.style.animationDelay = `${index * 0.1}s`;
+                        
+                        postDiv.innerHTML = `
+                            <img src="${photo.url}" alt="User Photo" loading="lazy">
+                            
+                            <!-- Hover Overlay with Stats -->
+                            <div class="instagram-overlay">
+                                <div class="flex items-center space-x-4">
+                                    <span class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="white" viewBox="0 0 24 24">
+                                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                        </svg>
+                                        ${photo.likes ? photo.likes.length : 0}
+                                    </span>
+                                    <span class="flex items-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                        ${photo.comments ? photo.comments.length : 0}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons (Always Visible) -->
+                            <div class="absolute bottom-2 left-2 right-2 flex justify-between items-center">
+                                <div class="flex space-x-2">
+                                    <button data-photo-id="${photo.id}" data-photo-user-id="${photo.userId}" class="like-photo-btn bg-black bg-opacity-50 backdrop-blur-sm text-white rounded-full p-2 hover:bg-opacity-70 transition-all transform hover:scale-110">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="${photo.likes && photo.likes.includes(userId) ? 'red' : 'none'}" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                        </svg>
+                                    </button>
+                                    <button class="comment-photo-btn bg-black bg-opacity-50 backdrop-blur-sm text-white rounded-full p-2 hover:bg-opacity-70 transition-all transform hover:scale-110">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                
+                                ${isCurrentUser ? `
+                                    <div class="relative">
+                                        <button data-photo-id="${photo.id}" class="three-dot-menu-btn bg-black bg-opacity-50 backdrop-blur-sm text-white rounded-full p-2 hover:bg-opacity-70 transition-all">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                            </svg>
+                                        </button>
+                                        <div class="three-dot-dropdown hidden absolute bottom-full right-0 mb-2 bg-white rounded-xl shadow-lg min-w-[120px] z-10">
+                                            <button data-photo-id="${photo.id}" data-photo-url="${photo.url}" class="delete-photo-btn w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors flex items-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                                Hapus Post
+                                            </button>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+
+                        // Event listener for the entire photo div to open detail modal
+                        postDiv.addEventListener('click', (e) => {
+                            // Prevent opening detail modal if clicking on action buttons
+                            if (!e.target.closest('.like-photo-btn') && 
+                                !e.target.closest('.comment-photo-btn') && 
+                                !e.target.closest('.three-dot-menu-btn') &&
+                                !e.target.closest('.delete-photo-btn') &&
+                                !e.target.closest('.three-dot-dropdown')) {
+                                showPhotoDetail(photo, isCurrentUser);
+                            }
+                        });
+
+                        // Like button functionality
+                        const likeButton = postDiv.querySelector('.like-photo-btn');
+                        if (likeButton) {
+                            likeButton.addEventListener('click', async (e) => {
+                                e.stopPropagation();
+                                const photoId = e.currentTarget.dataset.photoId;
+                                const photoUserId = e.currentTarget.dataset.photoUserId;
+                                await handlePhotoLike(photoId, photoUserId);
+                            });
+                        }
+
+                        // Comment button functionality
+                        const commentButton = postDiv.querySelector('.comment-photo-btn');
+                        if (commentButton) {
+                            commentButton.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                showPhotoDetail(photo, isCurrentUser);
+                                // Focus on comment input
+                                setTimeout(() => {
+                                    const commentInput = document.getElementById('comment-input');
+                                    if (commentInput) commentInput.focus();
+                                }, 300);
+                            });
+                        }
+
+                        // Three dot menu functionality
+                        const threeDotButton = postDiv.querySelector('.three-dot-menu-btn');
+                        if (threeDotButton) {
+                            threeDotButton.addEventListener('click', (e) => {
+                                e.stopPropagation();
+                                const dropdown = postDiv.querySelector('.three-dot-dropdown');
+                                
+                                // Close all other dropdowns first
+                                document.querySelectorAll('.three-dot-dropdown').forEach(d => {
+                                    if (d !== dropdown) d.classList.add('hidden');
+                                });
+                                
+                                dropdown.classList.toggle('hidden');
+                            });
+                        }
+
+                        // Delete button functionality
+                        const deleteButton = postDiv.querySelector('.delete-photo-btn');
+                        if (deleteButton) {
+                            deleteButton.addEventListener('click', async (e) => {
+                                e.stopPropagation();
+                                const photoIdToDelete = e.currentTarget.dataset.photoId;
+                                const photoUrlToDelete = e.currentTarget.dataset.photoUrl;
+                                
+                                // Close dropdown
+                                const dropdown = postDiv.querySelector('.three-dot-dropdown');
+                                if (dropdown) dropdown.classList.add('hidden');
+                                
+                                // Modern confirmation dialog
+                                if (confirm("🗑️ Hapus postingan ini?\n\nTindakan ini tidak dapat dibatalkan.")) {
+                                    // Add loading state
+                                    deleteButton.innerHTML = '<div class="spinner w-4 h-4"></div> Menghapus...';
+                                    deleteButton.disabled = true;
+                                    
+                                    await deletePhoto(photoIdToDelete, photoUrlToDelete);
+                                }
+                            });
+                        }
+                        
+                        container.appendChild(postDiv);
+                    });
+                }
+            }
+
+            async function handlePhotoLike(photoId, photoUserId) {
+                if (!userId || !photoId || !photoUserId) return;
+
+                const userProfileDocRef = doc(db, `artifacts/${currentAppId}/users/${photoUserId}/profile/data`);
+                try {
+                    const docSnap = await getDoc(userProfileDocRef);
+                    if (docSnap.exists()) {
+                        const profileData = docSnap.data();
+                        const photos = profileData.photos || [];
+                        const photoIndex = photos.findIndex(p => p.id === photoId);
+
+                        if (photoIndex !== -1) {
+                            let updatedPhotos = JSON.parse(JSON.stringify(photos));
+                            let updatedLikes = updatedPhotos[photoIndex].likes || [];
+                            
+                            if (updatedLikes.includes(userId)) {
+                                updatedLikes = updatedLikes.filter(id => id !== userId);
+                                showToast("💔 Like dihapus", "info");
+                            } else {
+                                updatedLikes.push(userId);
+                                showToast("❤️ Foto disukai!", "success");
+                            }
+                            
+                            updatedPhotos[photoIndex].likes = updatedLikes;
+                            await updateDoc(userProfileDocRef, { photos: updatedPhotos });
+                            
+                            // Refresh profile if viewing current user or other user
+                            if (photoUserId === userId) {
+                                await fetchUserProfile(userId);
+                            } else {
+                                await showOtherUserProfile(photoUserId);
+                            }
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error handling photo like:", error);
+                    showToast("Gagal memberikan like", "error");
+                }
+            }
+
+            async function deletePhoto(photoId, photoUrl) {
+                if (!userId || !photoId) return;
+
+                const userProfileDocRef = doc(db, `artifacts/${currentAppId}/users/${userId}/profile/data`);
+                try {
+                    const docSnap = await getDoc(userProfileDocRef);
+                    if (docSnap.exists()) {
+                        const profileData = docSnap.data();
+                        const updatedPhotos = (profileData.photos || []).filter(photo => photo.id !== photoId);
+                        
+                        // Delete from Firestore
+                        await updateDoc(userProfileDocRef, { photos: updatedPhotos });
+                        console.log(`Photo ${photoId} deleted from Firestore.`);
+
+                        // Photo stored as Base64, no external storage to clean up
+                        console.log(`Photo ${photoId} deleted from profile.`);
+                        showToast("🗑️ Postingan dihapus", "success");
+
+                        await fetchUserProfile(userId); // Re-fetch to update UI
+                    }
+                } catch (error) {
+                    console.error("Error deleting photo:", error);
+                    showToast("Gagal menghapus postingan", "error");
+                }
+            }
+
+            function renderProfilePRs(container, prsArray, isCurrentUser) {
+                container.innerHTML = '';
+                const activePrs = prsArray.filter(pr => !pr.completed);
+                if (activePrs.length === 0) {
+                    container.appendChild(isCurrentUser ? noProfilePrMessage : noOtherProfilePrMessage);
+                    (isCurrentUser ? noProfilePrMessage : noOtherProfilePrMessage).classList.remove('hidden');
+                } else {
+                    (isCurrentUser ? noProfilePrMessage : noOtherProfilePrMessage).classList.add('hidden');
+                    activePrs.forEach(pr => {
+                        const prItem = document.createElement('div');
+                        prItem.className = 'p-3 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-start space-x-3';
+                        let dueDateDisplay = '';
+                        if (pr.dueDate) {
+                            const date = new Date(pr.dueDate + 'T00:00:00');
+                            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+                            dueDateDisplay = `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Deadline: ${date.toLocaleDateString('id-ID', options)}</p>`;
+                        }
+                        prItem.innerHTML = `
+                            <div class="flex-grow">
+                                <p class="font-medium text-sm">${pr.description}</p>
+                                ${dueDateDisplay}
+                            </div>
+                        `;
+                        container.appendChild(prItem);
+                    });
+                }
+            }
+
+
+            // --- Core Functionality Event Listeners ---
+            addPrBtn.addEventListener('click', () => {
+                if (!userId) {
+                    console.warn("User not logged in. Cannot add PR.");
+                    loginPromptMessage.classList.remove('hidden');
+                    return;
+                }
+                prModal.classList.remove('hidden');
+                prForm.reset(); 
+                prDueDateInput.value = ''; 
+            });
+
+            cancelPrBtn.addEventListener('click', () => {
+                prModal.classList.add('hidden');
+                prForm.reset();
+            });
+
+            prForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!userId) {
+                    console.error("User not logged in. Cannot save PR.");
+                    return;
+                }
+
+                savePrBtn.disabled = true; 
+                savePrBtn.innerHTML = '<div class="spinner"></div>'; 
+
+                const description = prDescInput.value;
+                const dueDate = prDueDateInput.value; 
+                const uploadedFile = prFileInput.files[0]; 
+                let fileUrl = null; // Changed from fileDataUrl
+                let fileType = null;
+                let fileName = null;
+
+                if (uploadedFile) {
+                    fileType = uploadedFile.type;
+                    fileName = uploadedFile.name;
+                    try {
+                        if (uploadedFile.type.startsWith('image/')) {
+                            // Compress and convert image to Base64
+                            const compressedFile = await compressImage(uploadedFile);
+                            fileUrl = await convertFileToBase64(compressedFile);
+                        } else {
+                            // For non-image files, convert directly to Base64
+                            fileUrl = await convertFileToBase64(uploadedFile);
+                        }
+                        console.log("File converted to Base64");
+                    } catch (error) {
+                        console.error("Error processing file:", error);
+                        savePrBtn.disabled = false;
+                        savePrBtn.innerHTML = 'Simpan';
+                        alert('Error processing file: ' + error.message);
+                        return; 
+                    }
+                }
+
+                try {
+                    await addDoc(collection(db, `artifacts/${currentAppId}/users/${userId}/homeworks`), {
+                        description: description,
+                        dueDate: dueDate, 
+                        fileUrl: fileUrl, // Changed from fileDataUrl
+                        fileType: fileType,       
+                        fileName: fileName,       
+                        timestamp: Date.now(),
+                        completed: false 
+                    });
+                    console.log("PR added to Firestore successfully!");
+                } catch (error) {
+                    console.error("Error adding PR to Firestore:", error);
+                }
+
+                prModal.classList.add('hidden');
+                prForm.reset();
+                savePrBtn.disabled = false; 
+                savePrBtn.innerHTML = 'Simpan'; 
+            });
+
+            prList.addEventListener('click', async (e) => {
+                if (e.target.closest('.pr-done-btn')) {
+                    const btn = e.target.closest('.pr-done-btn');
+                    const prId = btn.dataset.id; 
+
+                    if (userId && prId) {
+                        try {
+                            await updateDoc(doc(db, `artifacts/${currentAppId}/users/${userId}/homeworks`, prId), {
+                                completed: true,
+                                completedTimestamp: Date.now()
+                            });
+                            console.log("PR marked as completed!");
+                        } catch (error) {
+                            console.error("Error marking PR as completed:", error);
+                        }
+                    } else {
+                        console.error("User ID or PR ID not available. Cannot mark PR as completed.");
+                    }
+                } else if (e.target.closest('.explain-pr-btn')) {
+                    const btn = e.target.closest('.explain-pr-btn');
+                    const description = btn.dataset.description;
+                    if (description) {
+                        llmModalTitle.textContent = "Bantuan PR ✨"; 
+                        explainHomework(description);
+                    }
+                } else if (e.target.closest('.suggest-plan-btn')) {
+                    const btn = e.target.closest('.suggest-plan-btn');
+                    const description = btn.dataset.description;
+                    if (description) {
+                        llmModalTitle.textContent = "Rencana Belajar ✨"; 
+                        suggestStudyPlan(description);
+                    }
+                }
+            });
+
+            historyPrList.addEventListener('click', async (e) => {
+                if (e.target.closest('.pr-undo-btn')) {
+                    const btn = e.target.closest('.pr-undo-btn');
+                    const prId = btn.dataset.id; 
+
+                    if (userId && prId) {
+                        try {
+                            await updateDoc(doc(db, `artifacts/${currentAppId}/users/${userId}/homeworks`, prId), {
+                                completed: false,
+                                completedTimestamp: null 
+                            });
+                            console.log("PR marked as uncompleted!");
+                        } catch (error) {
+                            console.error("Error marking PR as uncompleted:", error);
+                        }
+                    } else {
+                        console.error("User ID or PR ID not available. Cannot mark PR as uncompleted.");
+                    }
+                }
+            });
+            
+            // --- Authentication Modal Logic ---
+            authBtn.addEventListener('click', () => {
+                authModal.classList.remove('hidden');
+                authErrorMessage.classList.add('hidden');
+                authForm.reset();
+                setAuthMode(true); 
+            });
+
+            cancelAuthBtn.addEventListener('click', () => {
+                authModal.classList.add('hidden');
+                authErrorMessage.classList.add('hidden');
+                authForm.reset();
+            });
+
+            toggleAuthModeBtn.addEventListener('click', () => {
+                setAuthMode(!isLoginMode);
+            });
+
+            function setAuthMode(mode) {
+                isLoginMode = mode;
+                if (isLoginMode) {
+                    authModalTitle.textContent = 'Selamat Datang';
+                    authSubmitBtn.textContent = 'Masuk';
+                    toggleAuthModeBtn.innerHTML = 'Belum punya akun? <span class="font-semibold underline">Daftar di sini</span>';
+                } else {
+                    authModalTitle.textContent = 'Buat Akun Baru';
+                    authSubmitBtn.textContent = 'Daftar';
+                    toggleAuthModeBtn.innerHTML = 'Sudah punya akun? <span class="font-semibold underline">Masuk di sini</span>';
+                }
+                authErrorMessage.classList.add('hidden'); 
+            }
+
+            authForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                authErrorMessage.classList.add('hidden'); 
+
+                const email = authEmailInput.value;
+                const password = authPasswordInput.value;
+
+                if (!email || !password) {
+                    authErrorMessage.textContent = "Email dan password harus diisi.";
+                    authErrorMessage.classList.remove('hidden');
+                    return;
+                }
+                if (password.length < 6) {
+                    authErrorMessage.textContent = "Password minimal 6 karakter.";
+                    authErrorMessage.classList.remove('hidden');
+                    return;
+                }
+
+                authSubmitBtn.disabled = true;
+                authSubmitBtn.innerHTML = '<div class="spinner"></div>';
+
+                if (isLoginMode) {
+                    try {
+                        await signInWithEmailAndPassword(auth, email, password);
+                        authModal.classList.add('hidden');
+                        authForm.reset();
+                        console.log("User logged in successfully!");
+                    } catch (error) {
+                        let errorMessage = "Terjadi kesalahan saat login.";
+                        if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                            errorMessage = "Email atau password salah.";
+                        } else if (error.code === 'auth/invalid-email') {
+                            errorMessage = "Format email tidak valid.";
+                        } else {
+                             errorMessage = `Error: ${error.message}`; 
+                        }
+                        authErrorMessage.textContent = errorMessage;
+                        authErrorMessage.classList.remove('hidden');
+                        console.error("Login error:", error.message);
+                    }
+                } else {
+                    try {
+                        await createUserWithEmailAndPassword(auth, email, password);
+                        authModal.classList.add('hidden');
+                        authForm.reset();
+                        console.log("User registered successfully!");
+                    } catch (error) {
+                        let errorMessage = "Terjadi kesalahan saat registrasi.";
+                        if (error.code === 'auth/email-already-in-use') {
+                            errorMessage = "Email ini sudah terdaftar.";
+                        } else if (error.code === 'auth/weak-password') {
+                            errorMessage = "Password terlalu lemah (minimal 6 karakter).";
+                        } else if (error.code === 'auth/invalid-email') {
+                            errorMessage = "Format email tidak valid.";
+                        } else if (error.code === 'auth/operation-not-allowed') {
+                            errorMessage = "Registrasi email/password tidak diaktifkan. Harap aktifkan di Firebase Console > Authentication > Sign-in method.";
+                        }
+                        else {
+                            errorMessage = `Error: ${error.message}`; 
+                        }
+                        authErrorMessage.textContent = errorMessage;
+                        authErrorMessage.classList.remove('hidden');
+                        console.error("Register error:", error.message);
+                    }
+                }
+                authSubmitBtn.disabled = false;
+                authSubmitBtn.innerHTML = isLoginMode ? 'Masuk' : 'Daftar';
+            });
+
+            // Google Login
+            googleLoginBtn.addEventListener('click', async () => {
+                authErrorMessage.classList.add('hidden'); 
+                googleLoginBtn.disabled = true; 
+                googleLoginBtn.innerHTML = '<div class="spinner"></div><span class="ml-2">Memuat...</span>'; 
+
+                try {
+                    await signInWithPopup(auth, googleProvider);
+                    authModal.classList.add('hidden');
+                    console.log("User logged in with Google successfully!");
+                } catch (error) {
+                    let errorMessage = "Terjadi kesalahan saat login dengan Google.";
+                    if (error.code === 'auth/popup-closed-by-user') {
+                        errorMessage = "Pop-up login ditutup.";
+                    } else if (error.code === 'auth/cancelled-popup-request') {
+                        errorMessage = "Permintaan pop-up dibatalkan.";
+                    } else if (error.code === 'auth/operation-not-allowed') {
+                        errorMessage = "Login Google tidak diaktifkan. Harap aktifkan di Firebase Console > Authentication > Sign-in method.";
+                    }
+                    else {
+                        errorMessage = `Error: ${error.message}`;
+                    }
+                    authErrorMessage.textContent = errorMessage;
+                    authErrorMessage.classList.remove('hidden');
+                    console.error("Google login error:", error.message);
+                } finally {
+                    googleLoginBtn.disabled = false; 
+                    googleLoginBtn.innerHTML = `<svg class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.0003 4.75C14.0263 4.75 15.8453 5.483 17.2023 6.757L20.0483 3.911C18.0673 2.097 15.2303 1 12.0003 1C7.79533 1 4.10933 3.447 2.36833 7.049L5.62633 9.516C6.44633 7.054 8.94833 4.75 12.0003 4.75Z" fill="#EA4335"/>
+                        <path d="M23.0003 12.0003C23.0003 11.3463 22.9463 10.6933 22.8443 10.0533H12.0003V14.3913H18.3983C18.1183 15.6173 17.3473 16.6693 16.2043 17.3883L19.4623 19.8553C21.3193 18.1073 23.0003 15.0643 23.0003 12.0003Z" fill="#4285F4"/>
+                        <path d="M5.62598 14.484C5.24498 13.339 5.03198 12.17 5.03198 11.0003C5.03198 9.83033 5.24498 8.66133 5.62598 7.51633L2.36898 5.04933C1.04198 7.73433 1.04198 10.2663 2.36898 12.9513L5.62598 14.484Z" fill="#FBBC05"/>
+                        <path d="M12.0003 20.25C15.2303 20.25 18.0673 19.143 20.0483 17.329L17.2023 14.483C15.8453 15.757 14.0263 16.49 12.0003 16.49C8.94833 16.49 6.44633 14.186 5.62633 11.724L2.36833 14.191C4.10933 17.793 7.79533 20.25 12.0003 20.25Z" fill="#34A853"/>
+                    </svg>
+                    Login dengan Google`; 
+                }
+            });
+
+            logoutBtn.addEventListener('click', async () => {
+                try {
+                    await signOut(auth);
+                    console.log("User logged out.");
+                } catch (error) {
+                    console.error("Error logging out:", error);
+                }
+            });
+
+            // --- LLM Functionality ---
+            closeLlmModalBtn.addEventListener('click', () => {
+                llmResponseModal.classList.add('hidden');
+                llmResponseText.textContent = ''; 
+            });
+
+            async function explainHomework(description) {
+                llmResponseModal.classList.remove('hidden');
+                llmLoadingSpinner.classList.remove('hidden');
+                llmResponseText.textContent = ''; 
+
+                try {
+                    const prompt = `Jelaskan pekerjaan rumah berikut secara singkat dan berikan beberapa tips untuk mengerjakannya: "${description}"`;
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        llmResponseText.textContent = text;
+                    } else {
+                        llmResponseText.textContent = "Maaf, tidak dapat menghasilkan penjelasan untuk saat ini. Coba lagi nanti.";
+                        console.error("Unexpected LLM response structure:", result);
+                    }
+                } catch (error) {
+                    llmResponseText.textContent = "Terjadi kesalahan saat menghubungi AI. Pastikan koneksi internet Anda stabil.";
+                    console.error("Error calling Gemini API for explanation:", error);
+                } finally {
+                    llmLoadingSpinner.classList.add('hidden');
+                }
+            }
+
+            async function suggestStudyPlan(description) {
+                llmResponseModal.classList.remove('hidden');
+                llmLoadingSpinner.classList.remove('hidden');
+                llmResponseText.textContent = ''; 
+
+                try {
+                    const prompt = `Buat rencana belajar singkat untuk pekerjaan rumah ini: "${description}". Sertakan langkah-langkah, perkiraan waktu, dan fokus utama.`;
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = ""; 
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        const text = result.candidates[0].content.parts[0].text;
+                        llmResponseText.textContent = text;
+                    } else {
+                        llmResponseText.textContent = "Maaf, tidak dapat menghasilkan rencana belajar untuk saat ini. Coba lagi nanti.";
+                        console.error("Unexpected LLM response structure for study plan:", result);
+                    }
+                } catch (error) {
+                    llmResponseText.textContent = "Terjadi kesalahan saat menghubungi AI untuk rencana belajar. Pastikan koneksi internet Anda stabil.";
+                    console.error("Error calling Gemini API for study plan:", error);
+                } finally {
+                    llmLoadingSpinner.classList.add('hidden');
+                }
+            }
+
+            // --- Navigation Logic ---
+            function showSection(sectionId) {
+                document.querySelectorAll('.content-section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+                document.getElementById(sectionId).classList.remove('hidden');
+
+                if (window.innerWidth < 768) { 
+                    sidebar.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                }
+            }
+
+            hamburgerMenu.addEventListener('click', () => {
+                sidebar.classList.add('active');
+                sidebarOverlay.classList.add('active');
+            });
+
+            closeSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+
+            navJadwal.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('jadwal-section');
+            });
+
+            navPr.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('pr-section');
+            });
+
+            navHistoryPr.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('history-pr-section');
+                listenForCompletedHomeworks(); 
+            });
+
+            navProfile.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('profile-section');
+                updateProfileUI(); 
+            });
+
+            navFriends.addEventListener('click', (e) => {
+                e.preventDefault();
+                showSection('friends-section');
+                generateProfileLink();
+                loadFriendsList();
+            });
+
+            // --- Class Selection Modal Logic ---
+            saveClassSelectionBtn.addEventListener('click', async () => {
+                const selectedClass = initialClassSelect.value;
+                if (selectedClass && userId) {
+                    await updateRemoteUserProfile({ className: selectedClass });
+                    updateScheduleDisplay(selectedClass);
+                    classSelectionModal.classList.add('hidden');
+                } else {
+                    console.warn("No class selected or user not logged in.");
+                }
+            });
+
+            // --- Profile Editing (Name, Bio, Avatar) ---
+            saveProfileBtn.addEventListener('click', async () => {
+                if (!userId) return;
+                const newName = profileNameInput.value.trim();
+                const newBio = profileBioInput.value.trim();
+                
+                const updates = {};
+                if (newName !== currentUserProfile.name) {
+                    updates.name = newName;
+                }
+                if (newBio !== currentUserProfile.bio) {
+                    updates.bio = newBio;
+                }
+
+                if (Object.keys(updates).length > 0) {
+                    await updateRemoteUserProfile(updates);
+                }
+            });
+
+            editAvatarBtn.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*';
+                input.onchange = async (e) => {
+                    const file = e.target.files[0];
+                    if (file && userId) {
+                        try {
+                            // Compress and convert avatar to Base64
+                            const compressedFile = await compressImage(file, 200); // Smaller size for avatar
+                            const avatarUrl = await convertFileToBase64(compressedFile);
+                            await updateRemoteUserProfile({ avatarUrl: avatarUrl });
+                            console.log("Avatar uploaded!");
+                        } catch (error) {
+                            console.error("Error uploading avatar:", error);
+                            alert('Error uploading avatar: ' + error.message);
+                        }
+                    }
+                };
+                input.click();
+            });
+
+
+            // --- Profile Photo Upload with Preview and Loading ---
+            uploadProfilePhotoBtn.addEventListener('click', () => {
+                photoUploadModal.classList.remove('hidden');
+                photoUploadPreview.classList.add('hidden');
+                document.getElementById('upload-placeholder').classList.remove('hidden');
+                photoUploadPreview.src = '';
+                photoUploadInput.value = ''; 
+                photoUploadError.classList.add('hidden');
+                photoUploadBtnText.textContent = 'Upload';
+                photoUploadSpinner.classList.add('hidden');
+                confirmPhotoUploadBtn.disabled = false;
+            });
+
+            // Choose file button
+            document.getElementById('choose-file-btn').addEventListener('click', () => {
+                photoUploadInput.click();
+            });
+
+            cancelPhotoUploadBtn.addEventListener('click', () => {
+                photoUploadModal.classList.add('hidden');
+            });
+
+            photoUploadInput.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    photoUploadError.classList.add('hidden');
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        photoUploadPreview.src = event.target.result;
+                        photoUploadPreview.classList.remove('hidden');
+                        document.getElementById('upload-placeholder').classList.add('hidden');
+                    };
+                    reader.onerror = (error) => {
+                        photoUploadPreview.classList.add('hidden');
+                        document.getElementById('upload-placeholder').classList.remove('hidden');
+                        photoUploadError.textContent = "Gagal membaca file.";
+                        photoUploadError.classList.remove('hidden');
+                        console.error("Error reading file for preview:", error);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    photoUploadPreview.classList.add('hidden');
+                    document.getElementById('upload-placeholder').classList.remove('hidden');
+                }
+            });
+
+            confirmPhotoUploadBtn.addEventListener('click', async () => {
+                if (!userId) {
+                    photoUploadError.textContent = "Anda harus login untuk mengunggah foto.";
+                    photoUploadError.classList.remove('hidden');
+                    return;
+                }
+
+                const file = photoUploadInput.files[0];
+                if (!file) {
+                    photoUploadError.textContent = "Pilih foto untuk diunggah.";
+                    photoUploadError.classList.remove('hidden');
+                    return;
+                }
+
+                                                photoUploadBtnText.textContent = 'Uploading...';
+                photoUploadSpinner.classList.remove('hidden');
+                confirmPhotoUploadBtn.disabled = true;
+                photoUploadError.classList.add('hidden');
+
+                try {
+                    const photoId = Date.now().toString(); 
+                    // Compress and convert photo to Base64
+                    const compressedFile = await compressImage(file);
+                    const photoUrl = await convertFileToBase64(compressedFile);
+
+                    const newPhoto = {
+                        id: photoId,
+                        url: photoUrl,
+                        timestamp: Date.now(),
+                        likes: [],
+                        comments: [],
+                        userId: userId 
+                    };
+
+                    await updateDoc(doc(db, `artifacts/${currentAppId}/users/${userId}/profile/data`), {
+                        photos: arrayUnion(newPhoto)
+                    });
+                    console.log("Photo uploaded to profile successfully!");
+                    showToast("📸 Foto berhasil diupload!", "success");
+                    photoUploadModal.classList.add('hidden');
+                    await fetchUserProfile(userId);
+                } catch (error) {
+                    photoUploadError.textContent = `Gagal mengunggah foto: ${error.message}`;
+                    photoUploadError.classList.remove('hidden');
+                    console.error("Error uploading profile photo:", error);
+                } finally {
+                    photoUploadBtnText.textContent = 'Upload';
+                    photoUploadSpinner.classList.add('hidden');
+                    confirmPhotoUploadBtn.disabled = false;
+                }
+            });
+
+
+            // --- Photo Detail Modal (Likes & Comments) ---
+            async function showPhotoDetail(photo, isCurrentUser) {
+                currentViewedPhotoId = photo.id;
+                currentViewedPhotoUserId = photo.userId; 
+                detailPhotoImg.src = photo.url;
+                await updateLikesAndCommentsUI(photo.likes, photo.comments);
+                
+                if (userId) { 
+                    if (isCurrentUser) { 
+                        likeBtn.classList.add('hidden'); 
+                        commentForm.classList.remove('hidden'); 
+                    } else { 
+                        likeBtn.classList.remove('hidden');
+                        commentForm.classList.remove('hidden');
+                        if (photo.likes.includes(userId)) {
+                            likeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21H3a1 1 0 01-1-1V9a1 1 0 011-1h1.586a1 1 0 00.707-.293l3.414-3.414A1 1 0 019.586 3H12a2 2 0 012 2v1h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21H3a1 1 0 01-1-1V9a1 1 0 011-1h1.586a1 1 0 00.707-.293l3.414-3.414A1 1 0 019.586 3H12a2 2 0 012 2v1z" /></svg><span id="like-count">${photo.likes.length}</span>`;
+                            likeBtn.classList.add('text-red-500'); 
+                        } else {
+                            likeBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21H3a1 1 0 01-1-1V9a1 1 0 011-1h1.586a1 1 0 00.707-.293l3.414-3.414A1 1 0 019.586 3H12a2 2 0 012 2v1h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21H3a1 1 0 01-1-1V9a1 1 0 011-1h1.586a1 1 0 00.707-.293l3.414-3.414A1 1 0 019.586 3H12a2 2 0 012 2v1z" /></svg><span id="like-count">${photo.likes.length}</span>`;
+                            likeBtn.classList.remove('text-red-500');
+                        }
+                    }
+                } else { 
+                    likeBtn.classList.add('hidden');
+                    commentForm.classList.add('hidden');
+                }
+
+                photoDetailModal.classList.remove('hidden');
+            }
+
+            async function updateLikesAndCommentsUI(likes, comments) {
+                likeCount.textContent = likes.length;
+                commentCount.textContent = `${comments.length} Komentar`;
+                commentsList.innerHTML = '';
+                likedByUl.innerHTML = ''; 
+
+                if (likes.length > 0) {
+                    likedByList.classList.remove('hidden');
+                    const userPromises = likes.map(uid => getDoc(doc(db, `artifacts/${currentAppId}/public_profiles/${uid}`))); 
+                    const userSnaps = await Promise.all(userPromises);
+                    userSnaps.forEach(snap => {
+                        if (snap.exists()) {
+                            const userData = snap.data();
+                            const userTag = document.createElement('span');
+                            userTag.className = 'bg-white bg-opacity-20 text-white px-3 py-1 rounded-full text-xs';
+                            userTag.textContent = userData.name || userData.email.split('@')[0];
+                            likedByUl.appendChild(userTag);
+                        }
+                    });
+                } else {
+                    likedByList.classList.add('hidden');
+                }
+
+                if (comments.length === 0) {
+                    noCommentsMessage.classList.remove('hidden');
+                } else {
+                    noCommentsMessage.classList.add('hidden');
+                    comments.sort((a, b) => b.timestamp - a.timestamp);
+                    comments.forEach(comment => {
+                        const commentDiv = document.createElement('div');
+                        commentDiv.className = 'bg-white bg-opacity-10 backdrop-blur-sm p-4 rounded-xl border border-white border-opacity-20';
+                        commentDiv.innerHTML = `
+                            <div class="flex items-center space-x-2 mb-2">
+                                <div class="w-8 h-8 bg-white bg-opacity-30 rounded-full flex items-center justify-center">
+                                    <span class="text-xs">👤</span>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-white text-sm">${comment.userName || 'Pengguna Anonim'}</p>
+                                    <p class="text-xs text-white text-opacity-60">${new Date(comment.timestamp).toLocaleString('id-ID')}</p>
+                                </div>
+                            </div>
+                            <p class="text-white text-opacity-90 text-sm leading-relaxed">${comment.text}</p>
+                        `;
+                        commentsList.appendChild(commentDiv);
+                    });
+                }
+            }
+
+            closePhotoDetailModalBtn.addEventListener('click', () => {
+                photoDetailModal.classList.add('hidden');
+                currentViewedPhotoId = null;
+                currentViewedPhotoUserId = null;
+            });
+
+            likeBtn.addEventListener('click', async () => {
+                if (!userId || !currentViewedPhotoId || !currentViewedPhotoUserId) return;
+
+                const userProfileDocRef = doc(db, `artifacts/${currentAppId}/users/${currentViewedPhotoUserId}/profile/data`);
+                try {
+                    const docSnap = await getDoc(userProfileDocRef);
+                    if (docSnap.exists()) {
+                        const profileData = docSnap.data();
+                        const photos = profileData.photos || [];
+                        const photoIndex = photos.findIndex(p => p.id === currentViewedPhotoId);
+
+                        if (photoIndex !== -1) {
+                            let updatedPhotos = JSON.parse(JSON.stringify(photos)); 
+                            let updatedLikes = updatedPhotos[photoIndex].likes || [];
+                            if (updatedLikes.includes(userId)) {
+                                updatedLikes = updatedLikes.filter(id => id !== userId);
+                            } else {
+                                updatedLikes.push(userId);
+                            }
+                            updatedPhotos[photoIndex].likes = updatedLikes; 
+
+                            await updateDoc(userProfileDocRef, { photos: updatedPhotos });
+                            await updateLikesAndCommentsUI(updatedPhotos[photoIndex].likes, updatedPhotos[photoIndex].comments); 
+                            if (currentViewedPhotoUserId === userId) {
+                                await fetchUserProfile(userId); 
+                            } else {
+                                await showOtherUserProfile(currentViewedPhotoUserId); 
+                            }
+                            console.log(`Photo ${currentViewedPhotoId} likes updated.`);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error updating likes:", error);
+                }
+            });
+
+            commentForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!userId || !currentViewedPhotoId || !currentViewedPhotoUserId || !commentInput.value.trim()) return;
+
+                const userProfileDocRef = doc(db, `artifacts/${currentAppId}/users/${currentViewedPhotoUserId}/profile/data`);
+                try {
+                    const docSnap = await getDoc(userProfileDocRef);
+                    if (docSnap.exists()) {
+                        const profileData = docSnap.data();
+                        const photos = profileData.photos || [];
+                        const photoIndex = photos.findIndex(p => p.id === currentViewedPhotoId);
+
+                        if (photoIndex !== -1) {
+                            let updatedPhotos = JSON.parse(JSON.stringify(photos)); 
+                            const newComment = {
+                                userId: userId,
+                                userName: currentUserProfile ? currentUserProfile.name || currentUserProfile.email.split('@')[0] : 'Anonim',
+                                text: commentInput.value.trim(),
+                                timestamp: Date.now()
+                            };
+                            updatedPhotos[photoIndex].comments = updatedPhotos[photoIndex].comments || [];
+                            updatedPhotos[photoIndex].comments.push(newComment); 
+
+                            await updateDoc(userProfileDocRef, { photos: updatedPhotos });
+                            await updateLikesAndCommentsUI(updatedPhotos[photoIndex].likes, updatedPhotos[photoIndex].comments); 
+                            commentInput.value = ''; 
+                            console.log(`Comment added to photo ${currentViewedPhotoId}.`);
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error adding comment:", error);
+                }
+            });
+
+
+            // --- Friends System Logic ---
+            function generateProfileLink() {
+                if (userId) {
+                    const baseUrl = window.location.origin + window.location.pathname;
+                    const profileUrl = `${baseUrl}?profile=${userId}`;
+                    profileLink.value = profileUrl;
+                }
+            }
+
+            copyProfileLinkBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(profileLink.value);
+                    showToast("🔗 Link profil disalin!", "success");
+                    
+                    // Update button temporarily
+                    const originalText = copyProfileLinkBtn.innerHTML;
+                    copyProfileLinkBtn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Tersalin!
+                    `;
+                    setTimeout(() => {
+                        copyProfileLinkBtn.innerHTML = originalText;
+                    }, 2000);
+                } catch (error) {
+                    showToast("Gagal menyalin link", "error");
+                }
+            });
+
+            shareProfileBtn.addEventListener('click', async () => {
+                if (!userId) return;
+                
+                const baseUrl = window.location.origin + window.location.pathname;
+                const profileUrl = `${baseUrl}?profile=${userId}`;
+                
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: 'Profil Saya',
+                            text: 'Lihat profil saya di aplikasi sekolah!',
+                            url: profileUrl
+                        });
+                        showToast("📤 Profil berhasil dibagikan!", "success");
+                    } catch (error) {
+                        if (error.name !== 'AbortError') {
+                            await copyToClipboard(profileUrl);
+                        }
+                    }
+                } else {
+                    await copyToClipboard(profileUrl);
+                }
+            });
+
+            async function copyToClipboard(text) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    showToast("🔗 Link profil disalin!", "success");
+                } catch (error) {
+                    showToast("Gagal menyalin link", "error");
+                }
+            }
+
+            addFriendBtn.addEventListener('click', async () => {
+                const friendLink = friendLinkInput.value.trim();
+                if (!friendLink) {
+                    showToast("Masukkan link profil teman", "warning");
+                    return;
+                }
+
+                let friendId = "";
+                // Try absolute URL first
+                try {
+                    const url = new URL(friendLink);
+                    friendId = url.searchParams.get('profile') || '';
+                } catch (_) {
+                    // Not a full URL, continue
+                }
+
+                // Fallback: regex extract ?profile=... from any text
+                if (!friendId) {
+                    const match = friendLink.match(/[?&]profile=([^&]+)/);
+                    if (match) {
+                        friendId = decodeURIComponent(match[1]);
+                    }
+                }
+
+                // Accept raw UID
+                if (!friendId && /^[A-Za-z0-9_-]{10,}$/.test(friendLink)) {
+                    friendId = friendLink;
+                }
+
+                if (!friendId) {
+                    showToast("Link profil tidak valid", "error");
+                    return;
+                }
+                if (friendId === userId) {
+                    showToast("Tidak bisa menambahkan diri sendiri", "warning");
+                    return;
+                }
+
+                await addFriend(friendId);
+                friendLinkInput.value = '';
+            });
+
+            async function addFriend(friendId) {
+                if (!userId || !friendId) return;
+
+                try {
+                    // Check if friend exists
+                    const friendDocRef = doc(db, `artifacts/${currentAppId}/public_profiles/${friendId}`);
+                    const friendSnap = await getDoc(friendDocRef);
+                    
+                    if (!friendSnap.exists()) {
+                        showToast("Pengguna tidak ditemukan", "error");
+                        return;
+                    }
+
+                    // Check if already friends
+                    if (currentUserProfile.following && currentUserProfile.following.includes(friendId)) {
+                        showToast("Sudah menjadi teman", "warning");
+                        return;
+                    }
+
+                    // Add to following list
+                    const currentUserDocRef = doc(db, `artifacts/${currentAppId}/users/${userId}/profile/data`);
+                    const friendUserDocRef = doc(db, `artifacts/${currentAppId}/users/${friendId}/profile/data`);
+
+                    await Promise.all([
+                        updateDoc(currentUserDocRef, {
+                            following: arrayUnion(friendId)
+                        }),
+                        updateDoc(friendUserDocRef, {
+                            followers: arrayUnion(userId)
+                        })
+                    ]);
+
+                    showToast("👥 Teman berhasil ditambahkan!", "success");
+                    await fetchUserProfile(userId);
+                    loadFriendsList();
+                } catch (error) {
+                    console.error("Error adding friend:", error);
+                    showToast("Gagal menambahkan teman", "error");
+                }
+            }
+
+            async function loadFriendsList() {
+                if (!userId || !currentUserProfile) return;
+
+                loadingFriends.classList.remove('hidden');
+                noFriendsMessage.classList.add('hidden');
+                friendsList.innerHTML = '';
+
+                try {
+                    const friends = currentUserProfile.following || [];
+                    
+                    if (friends.length === 0) {
+                        noFriendsMessage.classList.remove('hidden');
+                    } else {
+                        const friendPromises = friends.map(friendId => 
+                            getDoc(doc(db, `artifacts/${currentAppId}/public_profiles/${friendId}`))
+                        );
+                        
+                        const friendSnaps = await Promise.all(friendPromises);
+                        
+                        friendSnaps.forEach((snap, index) => {
+                            if (snap.exists()) {
+                                const friendData = snap.data();
+                                const friendCard = document.createElement('div');
+                                friendCard.className = 'hover-card glass-effect rounded-xl p-4 flex items-center justify-between';
+                                friendCard.innerHTML = `
+                                    <div class="flex items-center space-x-4">
+                                        <img src="${friendData.avatarUrl || 'https://placehold.co/48x48/cccccc/333333?text=Avatar'}" alt="Avatar" class="w-12 h-12 rounded-full object-cover border-2 border-white border-opacity-30">
+                                        <div>
+                                            <p class="font-bold text-white">${friendData.name || friendData.email.split('@')[0]}</p>
+                                            <p class="text-sm text-white text-opacity-70">${friendData.className || 'Kelas Belum Dipilih'}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex space-x-2">
+                                        <button class="view-friend-btn bg-white bg-opacity-20 text-white px-4 py-2 rounded-xl hover:bg-opacity-30 transition-all" data-friend-id="${snap.id}">
+                                            👀 Lihat
+                                        </button>
+                                        <button class="remove-friend-btn bg-red-500 bg-opacity-70 text-white px-4 py-2 rounded-xl hover:bg-opacity-90 transition-all" data-friend-id="${snap.id}">
+                                            🗑️
+                                        </button>
+                                    </div>
+                                `;
+                                
+                                // Event listeners
+                                friendCard.querySelector('.view-friend-btn').addEventListener('click', () => {
+                                    showOtherUserProfile(snap.id);
+                                });
+                                
+                                friendCard.querySelector('.remove-friend-btn').addEventListener('click', async () => {
+                                    if (confirm("Hapus teman ini dari daftar?")) {
+                                        await removeFriend(snap.id);
+                                    }
+                                });
+                                
+                                friendsList.appendChild(friendCard);
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error loading friends:", error);
+                    showToast("Gagal memuat daftar teman", "error");
+                } finally {
+                    loadingFriends.classList.add('hidden');
+                }
+            }
+
+            async function removeFriend(friendId) {
+                if (!userId || !friendId) return;
+
+                try {
+                    const currentUserDocRef = doc(db, `artifacts/${currentAppId}/users/${userId}/profile/data`);
+                    const friendUserDocRef = doc(db, `artifacts/${currentAppId}/users/${friendId}/profile/data`);
+
+                    await Promise.all([
+                        updateDoc(currentUserDocRef, {
+                            following: arrayRemove(friendId)
+                        }),
+                        updateDoc(friendUserDocRef, {
+                            followers: arrayRemove(userId)
+                        })
+                    ]);
+
+                    showToast("👋 Teman dihapus dari daftar", "info");
+                    await fetchUserProfile(userId);
+                    loadFriendsList();
+                } catch (error) {
+                    console.error("Error removing friend:", error);
+                    showToast("Gagal menghapus teman", "error");
+                }
+            }
+
+            async function showOtherUserProfile(otherUserId) {
+                if (!otherUserId) return;
+
+                const userDocRef = doc(db, `artifacts/${currentAppId}/users/${otherUserId}/profile/data`);
+                const homeworksCollectionRef = collection(db, `artifacts/${currentAppId}/users/${otherUserId}/homeworks`);
+                const qActivePrs = query(homeworksCollectionRef, where("completed", "!=", true));
+
+                try {
+                    const [docSnap, prSnapshot] = await Promise.all([getDoc(userDocRef), getDocs(qActivePrs)]);
+
+                    if (docSnap.exists()) {
+                        const otherUserProfile = docSnap.data();
+                        otherProfileModal.classList.remove('hidden');
+                        otherProfileName.textContent = otherUserProfile.name || otherUserProfile.email.split('@')[0];
+                        otherProfileEmail.textContent = otherUserProfile.email || '';
+                        otherProfileClass.textContent = `Kelas: ${otherUserProfile.className || 'Belum Dipilih'}`;
+                        otherProfileAvatar.src = otherUserProfile.avatarUrl || 'https://placehold.co/96x96/cccccc/333333?text=Avatar';
+                        otherFollowerCount.textContent = otherUserProfile.followers ? otherUserProfile.followers.length : 0;
+                        otherFollowingCount.textContent = otherUserProfile.following ? otherUserProfile.following.length : 0;
+
+                        if (userId && userId !== otherUserId) {
+                            followUnfollowBtn.classList.remove('hidden');
+                            if (currentUserProfile && currentUserProfile.following && currentUserProfile.following.includes(otherUserId)) {
+                                followUnfollowBtn.textContent = 'Unfollow';
+                                followUnfollowBtn.classList.remove('bg-blue-500');
+                                followUnfollowBtn.classList.add('bg-gray-500');
+                            } else {
+                                followUnfollowBtn.textContent = 'Follow';
+                                followUnfollowBtn.classList.remove('bg-gray-500');
+                                followUnfollowBtn.classList.add('bg-blue-500');
+                            }
+                            followUnfollowBtn.dataset.otherUid = otherUserId;
+                        } else {
+                            followUnfollowBtn.classList.add('hidden');
+                        }
+
+                        renderProfilePhotos(otherProfilePhotos, otherUserProfile.photos || [], false); 
+
+                        const otherUserActivePrs = [];
+                        prSnapshot.forEach(doc => {
+                            otherUserActivePrs.push({ id: doc.id, ...doc.data() });
+                        });
+                        renderProfilePRs(otherProfilePrList, otherUserActivePrs, false);
+                    } else {
+                        console.error("User profile not found for UID:", otherUserId);
+                    }
+                } catch (error) {
+                    console.error("Error loading other user profile:", error);
+                }
+            }
+
+            closeOtherProfileModalBtn.addEventListener('click', () => {
+                otherProfileModal.classList.add('hidden');
+            });
+
+            followUnfollowBtn.addEventListener('click', async (e) => {
+                const otherUid = e.target.dataset.otherUid;
+                if (!userId || !otherUid || userId === otherUid) return;
+
+                const currentUserDocRef = doc(db, `artifacts/${currentAppId}/users/${userId}/profile/data`);
+                const otherUserDocRef = doc(db, `artifacts/${currentAppId}/users/${otherUid}/profile/data`);
+
+                try {
+                    if (followUnfollowBtn.textContent === 'Follow') {
+                        await updateDoc(currentUserDocRef, {
+                            following: arrayUnion(otherUid)
+                        });
+                        await updateDoc(otherUserDocRef, {
+                            followers: arrayUnion(userId)
+                        });
+                        console.log(`User ${userId} followed ${otherUid}`);
+                    } else {
+                        await updateDoc(currentUserDocRef, {
+                            following: arrayRemove(otherUid)
+                        });
+                        await updateDoc(otherUserDocRef, {
+                            followers: arrayRemove(userId)
+                        });
+                        console.log(`User ${userId} unfollowed ${otherUid}`);
+                    }
+                    await fetchUserProfile(userId);
+                    await showOtherUserProfile(otherUid);
+                } catch (error) {
+                    console.error("Error following/unfollowing user:", error);
+                }
+            });
+
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.three-dot-menu-btn') && !e.target.closest('.three-dot-dropdown')) {
+                    document.querySelectorAll('.three-dot-dropdown').forEach(dropdown => {
+                        dropdown.classList.add('hidden');
+                    });
+                }
+            });
+
+            // Check for shared profile link
+            function checkSharedProfile() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const sharedProfileId = urlParams.get('profile');
+                
+                if (sharedProfileId) {
+                    // Auto-fill friend link input if on friends section
+                    if (friendLinkInput) {
+                        friendLinkInput.value = window.location.href;
+                    }
+                    
+                    // Show other user profile
+                    setTimeout(() => {
+                        showOtherUserProfile(sharedProfileId);
+                    }, 1000);
+                }
+            }
+
+            // Initial render of schedules and show default section
+            populateClassSelects(); 
+            renderSchedules();
+            updateDisplay(); 
+            showSection('jadwal-section'); 
+
+            // Check for shared profile after initial load
+            checkSharedProfile();
+
+            requestNotificationPermission();
+
+            setInterval(checkClassScheduleForNotifications, 60 * 1000); 
+
+            // Register Service Worker for PWA support
+            if ('serviceWorker' in navigator) {
+                try {
+                    await navigator.serviceWorker.register('/service-worker.js');
+                    console.log('Service Worker registered');
+                } catch (err) {
+                    console.error('Service Worker registration failed', err);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

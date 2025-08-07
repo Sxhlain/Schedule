@@ -1,8 +1,11 @@
-const CACHE_NAME = 'sekolah-app-cache-v1';
+const CACHE_NAME = 'sekolah-app-cache-v2';
 const ASSETS = [
   '/',
   '/index.html',
-  '/manifest.webmanifest'
+  '/app.html',
+  '/manifest.webmanifest',
+  '/NavIcon.png',
+  '/LogoTKJ3.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -21,14 +24,23 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const { request } = event;
-  // Network-first for navigation requests
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/index.html'))
+      (async () => {
+        try {
+          return await fetch(request);
+        } catch (_) {
+          const url = new URL(request.url);
+          if (url.pathname.endsWith('/app.html')) {
+            const cachedApp = await caches.match('/app.html');
+            if (cachedApp) return cachedApp;
+          }
+          return caches.match('/index.html');
+        }
+      })()
     );
     return;
   }
-  // Cache-first for others
   event.respondWith(
     caches.match(request).then((cached) => cached || fetch(request))
   );
