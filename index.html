@@ -35,6 +35,21 @@
 	</head>
 	<body>
 		<div id="root"></div>
-		
+		<noscript>
+			<p><a href="/app.html" style="display:inline-block;margin:16px;padding:10px 14px;background:#667eea;color:#fff;border-radius:12px;text-decoration:none">Buka Aplikasi</a></p>
+		</noscript>
+		<script>
+			// Tombol menuju aplikasi lengkap
+			const link = document.createElement('a');
+			link.href = '/app.html';
+			link.textContent = 'Buka Aplikasi';
+			link.style.cssText = 'position:fixed;right:16px;bottom:16px;background:#667eea;color:#fff;padding:10px 14px;border-radius:12px;text-decoration:none;z-index:9999;';
+			document.body.appendChild(link);
+		</script>
+		<script>
+			if ('serviceWorker' in navigator) {
+				navigator.serviceWorker.register('/service-worker.js').catch(()=>{});
+			}
+		</script>
 	</body>
 </html>
